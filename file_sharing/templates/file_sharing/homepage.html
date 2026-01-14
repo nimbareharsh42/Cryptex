@@ -1,0 +1,733 @@
+{% extends 'file_sharing/base.html' %}
+{% load static %}
+
+{% block title %}Cryptex - Military-Grade Secure File Sharing{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* Override base font */
+    .homepage-content {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Remove container margins for seamless design */
+    .homepage-content {
+        margin: -1.5rem -15px 0 -15px;
+    }
+
+    @media (min-width: 768px) {
+        .homepage-content {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    /* Enhanced Hero Section */
+    .enhanced-hero {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 50%, #34495e 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 6rem 0 8rem;
+        margin: -1.5rem 0 0 0;
+    }
+
+    .enhanced-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(155, 89, 182, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(52, 152, 219, 0.15) 0%, transparent 50%);
+        animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-subtitle {
+        font-size: 1.35rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+        line-height: 1.6;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero-image-container {
+        position: relative;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .hero-image {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        filter: drop-shadow(0 20px 60px rgba(155, 89, 182, 0.4));
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Enhanced CTA Buttons */
+    .cta-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: none;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .cta-btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        color: white;
+    }
+
+    .cta-btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .cta-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-3px);
+        color: white;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+        margin-top: -4rem;
+        position: relative;
+        z-index: 3;
+    }
+
+    .stat-card {
+        text-align: center;
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        display: block;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.95;
+        font-weight: 500;
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 6rem 0;
+        background: transparent;
+        position: relative;
+    }
+
+    .section-title {
+        font-size: 2.75rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #1a2332 0%, #667eea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        font-size: 1.25rem;
+        color: #495057;
+        margin-bottom: 4rem;
+        font-weight: 400;
+    }
+
+    /* Glassmorphic Feature Cards */
+    .glass-feature-card {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .glass-feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .glass-feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        background: rgba(255, 255, 255, 0.6);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .feature-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .glass-feature-card:hover .feature-icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+    }
+
+    .feature-icon-wrapper i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #1a2332;
+    }
+
+    .feature-description {
+        color: #495057;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    /* Security Showcase Section */
+    .security-showcase {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .security-showcase::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.4;
+    }
+
+    .security-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .security-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .security-feature {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .security-feature:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(10px);
+    }
+
+    .security-feature h5 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .security-feature h5 i {
+        color: #4ade80;
+        font-size: 1.5rem;
+    }
+
+    .security-feature p {
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .security-image {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    /* CTA Section */
+    .final-cta {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .final-cta::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: moveBackground 20s linear infinite;
+    }
+
+    @keyframes moveBackground {
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(50px, 50px);
+        }
+    }
+
+    .cta-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+    }
+
+    .cta-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .cta-subtitle {
+        font-size: 1.35rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.95;
+    }
+
+    .cta-btn-large {
+        background: white;
+        color: #667eea;
+        padding: 1.25rem 3rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .cta-btn-large:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        color: #667eea;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="homepage-content">
+    <!-- Enhanced Hero Section -->
+    <section class="enhanced-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title">
+                        Secure File Sharing with Military-Grade Encryption
+                    </h1>
+                    <p class="hero-subtitle">
+                        Share your sensitive files with confidence. End-to-end encryption ensures your data remains
+                        private and protected from unauthorized access.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'file_sharing:register' %}" class="cta-btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Get Started Free
+                        </a>
+                        <a href="#features" class="cta-btn-secondary">
+                            <i class="fas fa-play-circle"></i>
+                            See How It Works
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center hero-image-container">
+                    <img src="{% static 'file_sharing/images/hero_security.png' %}" alt="Secure File Sharing"
+                        class="hero-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <span class="stat-number" data-count="256">0</span>
+                        <span class="stat-label">Bit AES Encryption</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <span class="stat-number" data-count="100">0</span>
+                        <span class="stat-label">% Zero Knowledge</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <span class="stat-number mb-0" data-count="24">0</span>
+                            <span
+                                style="font-size: 3rem; font-weight: 800; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);">/</span>
+                            <span class="stat-number mb-0" data-count="7">0</span>
+                        </div>
+                        <span class="stat-label">Secure Access</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose Cryptex?</h2>
+            <p class="section-subtitle">Enterprise-grade security features designed to protect your most sensitive data
+            </p>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">End-to-End Encryption</h3>
+                        <p class="feature-description">
+                            Your files are encrypted before they leave your device using AES-256 encryption. Only
+                            authorized recipients with the correct keys can decrypt and access your data.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-user-lock"></i>
+                        </div>
+                        <h3 class="feature-title">Granular Access Control</h3>
+                        <p class="feature-description">
+                            Define precise permissions for each recipient. Control who can view, download, or share your
+                            files with detailed access management settings.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h3 class="feature-title">Complete Audit Trail</h3>
+                        <p class="feature-description">
+                            Track every action with comprehensive logging. Know exactly who accessed your files, when,
+                            and what they did with complete transparency.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-eye-slash"></i>
+                        </div>
+                        <h3 class="feature-title">Zero Knowledge Architecture</h3>
+                        <p class="feature-description">
+                            We can't access your encrypted files even if we wanted to. Only you and your authorized
+                            recipients hold the decryption keys.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="feature-title">Lightning Fast</h3>
+                        <p class="feature-description">
+                            Optimized encryption algorithms ensure fast processing without compromising security. Upload
+                            and share files in seconds.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Access Anywhere</h3>
+                        <p class="feature-description">
+                            Securely access your files from any device with a modern web browser. No software
+                            installation required.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Showcase Section -->
+    <section class="security-showcase">
+        <div class="container">
+            <div class="row align-items-center security-content">
+                <div class="col-lg-6">
+                    <h2 class="security-title">Military-Grade Security Standards</h2>
+
+                    <div class="security-feature">
+                        <h5>
+                            <i class="fas fa-check-circle"></i>
+                            AES-256 Encryption
+                        </h5>
+                        <p>
+                            Industry-standard encryption algorithm used by governments and security experts worldwide to
+                            protect classified information.
+                        </p>
+                    </div>
+
+                    <div class="security-feature">
+                        <h5>
+                            <i class="fas fa-check-circle"></i>
+                            RSA-2048 Key Pairs
+                        </h5>
+                        <p>
+                            Unique public-private key pairs for each user ensuring secure key exchange and perfect
+                            forward secrecy.
+                        </p>
+                    </div>
+
+                    <div class="security-feature">
+                        <h5>
+                            <i class="fas fa-check-circle"></i>
+                            Perfect Forward Secrecy
+                        </h5>
+                        <p>
+                            Each file gets a unique encryption key. Compromising one file doesn't affect the security of
+                            others.
+                        </p>
+                    </div>
+
+                    <div class="security-feature">
+                        <h5>
+                            <i class="fas fa-check-circle"></i>
+                            Client-Side Encryption
+                        </h5>
+                        <p>
+                            Files are encrypted on your device before upload. Your data is never exposed in plain text
+                            on our servers.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="{% static 'file_sharing/images/encryption_concept.png' %}" alt="Encryption Technology"
+                        class="security-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Secure Your Files?</h2>
+                <p class="cta-subtitle">
+                    Join thousands of users who trust Cryptex with their sensitive data
+                </p>
+                <a href="{% url 'file_sharing:register' %}" class="cta-btn-large">
+                    <i class="fas fa-user-plus"></i>
+                    Start Protecting Your Files Today
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Animated counter for stats
+    document.addEventListener('DOMContentLoaded', function () {
+        const counters = document.querySelectorAll('.stat-number');
+
+        const animateCounter = (counter) => {
+            const target = parseInt(counter.getAttribute('data-count'));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+
+            const updateCounter = () => {
+                current += increment;
+                if (current < target) {
+                    counter.textContent = Math.floor(current);
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    counter.textContent = target;
+                }
+            };
+
+            updateCounter();
+        };
+
+        // Intersection Observer for counter animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => observer.observe(counter));
+    });
+</script>
+{% endblock %}

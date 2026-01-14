@@ -1,0 +1,201 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Shared History - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Full Page Layout */
+    .history-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    @media (min-width: 768px) {
+        .history-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Header */
+    .page-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(30, 41, 59, 0.15);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, #cbd5e1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    /* Table Card */
+    .history-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .table-custom {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-custom thead th {
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-custom tbody tr {
+        transition: all 0.2s;
+    }
+
+    .table-custom tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .table-custom td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    .table-custom tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges */
+    .badge-log {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .badge-UPLOAD {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-DOWNLOAD {
+        background: #e0f2fe;
+        color: #075985;
+    }
+
+    .badge-SHARE {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-DELETE {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Empty */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+    }
+</style>
+
+<div class="history-page">
+    <div class="container-custom">
+        <div class="page-header">
+            <h1 class="page-title">Shared History & Audit Logs</h1>
+            <p class="text-white-50 mb-0" style="max-width: 600px;">
+                Complete transparent record of all file activities, access attempts, and security events associated with
+                your account.
+            </p>
+        </div>
+
+        <div class="history-card">
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Activity</th>
+                            <th>File Involved</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td style="white-space: nowrap;">
+                                <div class="fw-bold">{{ log.access_date|date:"M d, Y" }}</div>
+                                <div class="text-muted small">{{ log.access_date|date:"H:i:s" }}</div>
+                            </td>
+                            <td>
+                                <span class="badge-log badge-{{ log.access_type }}">
+                                    {% if log.access_type == 'UPLOAD' %}<i class="fas fa-upload"></i>
+                                    {% elif log.access_type == 'DOWNLOAD' %}<i class="fas fa-download"></i>
+                                    {% elif log.access_type == 'SHARE' %}<i class="fas fa-share-alt"></i>
+                                    {% elif log.access_type == 'DELETE' %}<i class="fas fa-trash"></i>
+                                    {% endif %}
+                                    {{ log.get_access_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if log.file %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-file text-muted"></i>
+                                    <span class="fw-medium">{{ log.file.original_filename }}</span>
+                                </div>
+                                {% else %}
+                                <span class="text-muted fst-italic">File deleted</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.details }}</td>
+                            <td><code
+                                    class="text-muted bg-light px-2 py-1 rounded">{{ log.ip_address|default:"Unknown" }}</code>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                <h4>No activity recorded</h4>
+                <p class="text-muted">Your audit logs are clean. New activities will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Share File - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Reuse shared styling for consistency */
+    .share-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+        .share-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .share-card {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .share-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .share-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .file-preview {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .file-type-icon {
+        font-size: 2rem;
+        color: #667eea;
+    }
+
+    .file-info h5 {
+        margin: 0;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .file-info p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    /* Custom Form styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Toggles */
+    .permission-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .permission-item:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+
+    .btn-share {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-share:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+    .btn-back {
+        display: block;
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .btn-back:hover {
+        color: #1e293b;
+    }
+</style>
+
+<div class="share-page">
+    <div class="share-card">
+        <div class="share-header">
+            <div class="share-icon">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <h2>Secure Share</h2>
+            <p class="text-muted">Grant secure access to your encrypted file.</p>
+        </div>
+
+        <div class="file-preview">
+            <div class="file-type-icon">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <div class="file-info">
+                <h5>{{ file.original_filename }}</h5>
+                <p>Ready for secure transmission</p>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Recipient Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"
+                        style="border-radius: 12px 0 0 12px; border: 2px solid #e2e8f0; border-right: none;">
+                        <i class="fas fa-user text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="username" name="username"
+                        placeholder="Enter username..." style="border-radius: 0 12px 12px 0;" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label mb-3">Permissions</label>
+
+                <div class="permission-item">
+                    <div>
+                        <div class="fw-bold text-dark">Allow Download</div>
+                        <small class="text-muted">Recipient can download the decrypted file</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="can_download" name="can_download" checked>
+                    </div>
+                </div>
+
+                <div class="permission-item">
+                    <div>
+                        <div class="fw-bold text-dark">Allow Re-sharing</div>
+                        <small class="text-muted">Recipient can share this file with others</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="can_share" name="can_share">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-share">
+                <i class="fas fa-paper-plane"></i> Share Securely
+            </button>
+            <a href="{% url 'file_sharing:dashboard' %}" class="btn-back">
+                Cancel & Return
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

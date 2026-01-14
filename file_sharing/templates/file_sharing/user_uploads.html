@@ -1,0 +1,433 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}My Uploads - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Reuse shared styling variables/concepts */
+    .files-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .files-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Header */
+    .page-header {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(26, 35, 50, 0.15);
+    }
+
+    .header-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, #c7d2fe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .page-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        max-width: 600px;
+    }
+
+    /* Controls */
+    .controls-bar {
+        background: white;
+        padding: 1rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .search-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    /* Grid */
+    .files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .file-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .file-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, #4f46e5, #7c3aed);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .file-card:hover::before {
+        opacity: 1;
+    }
+
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .file-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(79, 70, 229, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #4f46e5;
+    }
+
+    .file-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        background: #f1f5f9;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .file-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-top: auto;
+    }
+
+    .action-btn {
+        padding: 0.6rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-share {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .btn-share:hover {
+        background: #4338ca;
+        color: white;
+    }
+
+    .btn-download {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-download:hover {
+        background: #475569;
+        color: white;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        grid-column: span 2;
+    }
+
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 1rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+</style>
+
+<div class="files-page">
+    <div class="container-custom">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-overlay"></div>
+            <div class="header-content d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title">My Uploads</h1>
+                    <p class="page-description">
+                        Manage your encrypted files. Securely share, download, or permanently remove your documents.
+                    </p>
+                </div>
+                <div class="d-none d-md-block">
+                    <a href="{% url 'file_sharing:upload' %}" class="btn btn-light px-4 py-2 rounded-pill fw-bold"
+                        style="box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <i class="fas fa-plus me-2"></i>Upload New
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if user_files %}
+        <!-- Controls -->
+        <div class="controls-bar">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search my files..." id="fileSearch">
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small">{{ user_files.count }} Files</span>
+                <a href="{% url 'file_sharing:upload' %}" class="btn btn-primary btn-sm rounded-pill d-md-none">
+                    <i class="fas fa-plus"></i> New
+                </a>
+            </div>
+        </div>
+
+        <!-- Files Grid -->
+        <div class="files-grid" id="filesGrid">
+            {% for file in user_files %}
+            <div class="file-card">
+                <div class="card-top">
+                    <div class="file-icon">
+                        {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                        <i class="fas fa-file-pdf"></i>
+                        {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
+                        file.original_filename|lower|slice:"-4:" == ".png" %}
+                        <i class="fas fa-file-image"></i>
+                        {% else %}
+                        <i class="fas fa-file-alt"></i>
+                        {% endif %}
+                    </div>
+                    {% if file.shared_with.all.count > 0 %}
+                    <span class="file-badge">Shared ({{ file.shared_with.all.count }})</span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-2">
+                    <h5 class="file-name" title="{{ file.original_filename }}">
+                        {{ file.original_filename }}
+                    </h5>
+                    <div class="file-meta">
+                        <i class="far fa-clock"></i> {{ file.upload_date|date:"M d, Y" }}
+                    </div>
+                </div>
+
+                <div class="file-stats">
+                    <div class="stat-item" title="Downloads">
+                        <i class="fas fa-download text-primary"></i>
+                        <span>{{ file.download_count }}</span>
+                    </div>
+                    <div class="stat-item ms-auto text-success" title="Encrypted">
+                        <i class="fas fa-lock"></i>
+                        <span>AES-256</span>
+                    </div>
+                </div>
+
+                <div class="actions-grid">
+                    <a href="{% url 'file_sharing:share' file.id %}" class="action-btn btn-share">
+                        <i class="fas fa-share-alt"></i> Share
+                    </a>
+                    <a href="{% url 'file_sharing:download' file.id %}" class="action-btn btn-download">
+                        <i class="fas fa-download"></i> Save
+                    </a>
+                    <button type="button" class="action-btn btn-delete" data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ file.id }}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delete Modal for {{ file.original_filename }} -->
+            <div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                        <div class="modal-body p-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="mb-2">Delete File?</h4>
+                            <p class="text-muted mb-4">
+                                Are you sure you want to delete <strong>{{ file.original_filename }}</strong>?<br>
+                                This action cannot be undone.
+                            </p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                                <a href="{% url 'file_sharing:delete' file.id %}" class="btn btn-danger px-4">
+                                    <i class="fas fa-trash me-2"></i>Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div style="font-size: 4rem; color: #cbd5e1; margin-bottom: 1rem;">
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <h3>No files uploaded yet</h3>
+            <p class="text-muted mb-4">Your digital vault is empty. Upload your first secure file.</p>
+            <a href="{% url 'file_sharing:upload' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                <i class="fas fa-upload me-2"></i>Upload File
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Search functionality matching shared_with_me.html logic
+    document.getElementById('fileSearch')?.addEventListener('keyup', function () {
+        const searchText = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.file-card');
+
+        cards.forEach(card => {
+            const fileName = card.querySelector('.file-name').textContent.toLowerCase();
+            if (fileName.includes(searchText)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

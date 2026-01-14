@@ -1,0 +1,369 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Shared With Me - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Page Container */
+    .shared-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .shared-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Header Section */
+    .page-header {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(26, 35, 50, 0.15);
+    }
+
+    .header-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .page-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        max-width: 600px;
+    }
+
+    /* Search/Filter Bar */
+    .filter-bar {
+        background: white;
+        padding: 1rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    /* Files List Styling */
+    .files-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .file-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .file-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .file-card:hover::before {
+        opacity: 1;
+    }
+
+    .file-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .file-info {
+        flex: 1;
+    }
+
+    .file-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a2332;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .shared-by {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+
+    .avatar-xs {
+        width: 24px;
+        height: 24px;
+        background: #cbd5e1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: white;
+        font-weight: 600;
+    }
+
+    .action-btn {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #667eea;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+
+    .action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 1rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .empty-illustration {
+        width: 100px;
+        height: 100px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #667eea;
+        margin: 0 auto 1.5rem;
+    }
+</style>
+
+<div class="shared-page">
+    <div class="container-custom">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-overlay"></div>
+            <div class="header-content d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title">Shared With Me</h1>
+                    <p class="page-description">
+                        Files that have been securely shared with you by other users.
+                    </p>
+                </div>
+                <div class="d-none d-md-block">
+                    <i class="fas fa-share-alt" style="font-size: 5rem; opacity: 0.1;"></i>
+                </div>
+            </div>
+        </div>
+
+        {% if shared_files %}
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search files..." id="fileSearch">
+            </div>
+            <div class="text-muted small">
+                Showing {{ shared_files.count }} files
+            </div>
+        </div>
+
+        <!-- Files Grid -->
+        <div class="files-container" id="filesGrid">
+            {% for file in shared_files %}
+            <div class="file-card">
+                <div class="file-icon-wrapper">
+                    {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                    <i class="fas fa-file-pdf"></i>
+                    {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
+                    file.original_filename|lower|slice:"-4:" == ".png" %}
+                    <i class="fas fa-file-image"></i>
+                    {% else %}
+                    <i class="fas fa-file-alt"></i>
+                    {% endif %}
+                </div>
+
+                <div class="file-info">
+                    <h5 class="file-name" title="{{ file.original_filename }}">
+                        {{ file.original_filename }}
+                    </h5>
+                    <div class="file-meta">
+                        <i class="far fa-calendar-alt"></i>
+                        {{ file.upload_date|date:"M d, Y" }}
+                    </div>
+                    <div class="file-meta">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        Encrypted (AES-256)
+                    </div>
+                </div>
+
+                <div class="shared-by">
+                    <div class="avatar-xs">
+                        {{ file.owner.username|make_list|first|upper }}
+                    </div>
+                    <span>Shared by <strong>{{ file.owner.username }}</strong></span>
+                </div>
+
+                <a href="{% url 'file_sharing:download' file.id %}" class="action-btn">
+                    <i class="fas fa-download me-2"></i>Download
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-illustration">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3>No files shared yet</h3>
+            <p class="text-muted mb-4">When someone shares a file with you, it will appear here instantly.</p>
+            <a href="{% url 'file_sharing:dashboard' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                Go to Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Simple client-side search functionality
+    document.getElementById('fileSearch')?.addEventListener('keyup', function () {
+        const searchText = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.file-card');
+
+        cards.forEach(card => {
+            const fileName = card.querySelector('.file-name').textContent.toLowerCase();
+            const ownerName = card.querySelector('.shared-by strong').textContent.toLowerCase();
+
+            if (fileName.includes(searchText) || ownerName.includes(searchText)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

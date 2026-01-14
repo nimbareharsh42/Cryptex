@@ -1,0 +1,655 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Dashboard - Cryptex{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* Override base font */
+    /* Override base font */
+    .dashboard-page {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Dashboard container with seamless full-width background */
+    .dashboard-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    @media (min-width: 768px) {
+        .dashboard-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    /* Constrain content width to 7xl (1280px) */
+    .dashboard-page>.container-fluid {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Dashboard Hero Section */
+    .dashboard-hero {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 24px;
+        padding: 3rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.2);
+    }
+
+    .hero-bg-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.6;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        right: -5%;
+        top: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(40px);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, #fff, #e0e7ff);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .hero-description {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2rem;
+        max-width: 600px;
+        line-height: 1.6;
+    }
+
+    .hero-btn-primary {
+        background: white;
+        color: #6d28d9;
+        padding: 0.875rem 2rem;
+        border-radius: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        border: 2px solid white;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-btn-primary:hover {
+        background: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 0.875rem 2rem;
+        border-radius: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .hero-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 3rem;
+        margin-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1.5rem;
+    }
+
+    .hero-stat-item h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .hero-stat-item span {
+        font-size: 0.875rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Stats cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        border-left: 4px solid;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-card.primary {
+        border-color: #667eea;
+    }
+
+    .stat-card.success {
+        border-color: #22c55e;
+    }
+
+    .stat-card.info {
+        border-color: #3b82f6;
+    }
+
+    .stat-card.warning {
+        border-color: #f59e0b;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.primary {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+
+    .stat-icon.success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+    }
+
+    .stat-icon.info {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+
+    .stat-icon.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a2332;
+    }
+
+    /* Files card */
+    .files-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .files-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .files-header h5 {
+        font-weight: 700;
+        color: #1a2332;
+        margin: 0;
+    }
+
+    .badge-count {
+        background: #667eea;
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Table */
+    .files-table {
+        margin: 0;
+    }
+
+    .files-table thead th {
+        background: #f8f9fa;
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+    }
+
+    .files-table tbody td {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .files-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #1a2332;
+    }
+
+    .file-encrypted {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .badge-downloads {
+        background: #e7f3ff;
+        color: #3b82f6;
+        padding: 0.25rem 0.625rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Action buttons */
+    .btn-action {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-action.success {
+        background: #22c55e;
+        color: white;
+    }
+
+    .btn-action.primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-action.danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #adb5bd;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Sidebar */
+    .dashboard-sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 100px;
+    }
+
+    .profile-section {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.75rem;
+        color: white;
+    }
+
+    .profile-name {
+        font-weight: 700;
+        color: #1a2332;
+        font-size: 1.125rem;
+    }
+
+    .quick-action {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .quick-action:hover {
+        background: #f8f9fa;
+        color: #667eea;
+        padding-left: 1.25rem;
+    }
+
+    .quick-action i {
+        width: 20px;
+        margin-right: 0.75rem;
+    }
+
+    .logout-btn {
+        width: 100%;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        margin-top: 1rem;
+    }
+
+    .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .dashboard-sidebar {
+            position: static;
+            margin-top: 2rem;
+        }
+    }
+</style>
+
+<div class="dashboard-page">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-12">
+                <!-- Welcome Banner -->
+                <!-- Dashboard Hero -->
+                <div class="dashboard-hero">
+                    <div class="hero-bg-pattern"></div>
+                    <div class="hero-overlay"></div>
+
+                    <div class="hero-content row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="hero-title">Welcome back, {{ user.username }}! 👋</h1>
+                            <p class="hero-description">
+                                Your secure digital vault is active and protected with military-grade AES-256
+                                encryption.
+                                Access your files from anywhere, anytime.
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-3">
+                                <a href="{% url 'file_sharing:upload' %}" class="hero-btn-primary">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    Upload New File
+                                </a>
+                                <a href="{% url 'file_sharing:user_uploads' %}" class="hero-btn-secondary">
+                                    <i class="fas fa-folder-open"></i>
+                                    View All Files
+                                </a>
+                            </div>
+
+                            <div class="hero-stats">
+                                <div class="hero-stat-item">
+                                    <h4>{{ user_files.count }}</h4>
+                                    <span>Total Files</span>
+                                </div>
+                                <div class="hero-stat-item">
+                                    <h4>{{ total_shares_count }}</h4>
+                                    <span>Shared Files</span>
+                                </div>
+                                <div class="hero-stat-item">
+                                    <h4>100%</h4>
+                                    <span>Secure</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 d-none d-lg-flex justify-content-center align-items-center">
+                            <i class="fas fa-shield-virus"
+                                style="font-size: 10rem; color: rgba(255,255,255,0.2); transform: rotate(-15deg);"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card primary">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-file"></i>
+                            </div>
+                            <div class="stat-label">Your Files</div>
+                            <div class="stat-value">{{ user_files.count }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card success">
+                            <div class="stat-icon success">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div class="stat-label">Shared Files</div>
+                            <div class="stat-value">{{ shared_files.count }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card info">
+                            <div class="stat-icon info">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-label">Security</div>
+                            <div class="stat-value" style="font-size: 1.25rem;">Military</div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card warning">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="stat-label">Encryption</div>
+                            <div class="stat-value" style="font-size: 1.35rem;">AES-256</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Files -->
+                <div class="files-card">
+                    <div class="files-header">
+                        <h5><i class="fas fa-file me-2"></i>Your Recent Files</h5>
+                        <span class="badge-count">{{ user_files.count }} files</span>
+                    </div>
+
+                    {% if user_files %}
+                    <div class="table-responsive">
+                        <table class="table files-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Upload Date</th>
+                                    <th>Downloads</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in user_files|slice:":5" %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-file fa-lg text-primary me-3"></i>
+                                            <div>
+                                                <div class="file-name">{{ file.original_filename|truncatechars:30 }}
+                                                </div>
+                                                <div class="file-encrypted">{{ file.encrypted_filename|truncatechars:25
+                                                    }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>{{ file.upload_date|date:"M d, Y" }}</div>
+                                        <small class="text-muted">{{ file.upload_date|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge-downloads">{{ file.download_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'file_sharing:download' file.id %}"
+                                                class="btn btn-action success">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <a href="{% url 'file_sharing:share' file.id %}"
+                                                class="btn btn-action primary">
+                                                <i class="fas fa-share"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-action danger" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal{{ file.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <h4 class="empty-title">No files uploaded yet</h4>
+                        <p class="empty-text">Start by uploading your first file to get started!</p>
+                        <a href="{% url 'file_sharing:upload' %}" class="btn-upload">
+                            <i class="fas fa-upload me-2"></i>Upload Your First File
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modals -->
+{% for file in user_files %}
+<div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; border: none;">
+            <div class="modal-header" style="border-bottom: 1px solid #e9ecef;">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete:</p>
+                <div class="alert alert-warning" style="border-radius: 8px;">
+                    <strong>{{ file.original_filename }}</strong>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    style="border-radius: 6px;">Cancel</button>
+                <form method="post" action="{% url 'file_sharing:delete' file.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="border-radius: 6px;">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Quick Share - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Reuse shared styling */
+    .share-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+        .share-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .share-card {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .share-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .share-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+</style>
+
+<div class="share-page">
+    <div class="share-card">
+        <div class="share-header">
+            <div class="share-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h2>Quick Share</h2>
+            <p class="text-muted">Select a file and recipient to share securely.</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label">Select File to Share</label>
+                <select name="file_id" class="form-select" required>
+                    <option value="">-- Choose a encrypted file --</option>
+                    {% for file in user_files %}
+                    <option value="{{ file.id }}">{{ file.original_filename }}</option>
+                    {% empty %}
+                    <option disabled>No files available (Upload one first!)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Recipient Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"
+                        style="border-radius: 12px 0 0 12px; border: 2px solid #e2e8f0; border-right: none;">
+                        <i class="fas fa-user text-muted"></i>
+                    </span>
+                    <input type="text" name="username" class="form-control border-start-0"
+                        placeholder="Enter username..." style="border-radius: 0 12px 12px 0;" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-share-square"></i> Share Now
+            </button>
+
+            <a href="{% url 'file_sharing:dashboard' %}"
+                class="d-block text-center mt-3 text-muted text-decoration-none small fw-bold">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
