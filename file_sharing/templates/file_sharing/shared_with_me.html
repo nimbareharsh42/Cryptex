@@ -1,4 +1,5 @@
 {% extends 'file_sharing/base.html' %}
+{% load custom_filters %}
 
 {% block title %}Shared With Me - Cryptex{% endblock %}
 
@@ -60,6 +61,7 @@
         margin-bottom: 0.5rem;
         background: linear-gradient(to right, #fff, #a5b4fc);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         display: inline-block;
     }
@@ -291,13 +293,14 @@
 
         <!-- Files Grid -->
         <div class="files-container" id="filesGrid">
-            {% for file in shared_files %}
+            {% for share in shared_files %}
             <div class="file-card">
                 <div class="file-icon-wrapper">
-                    {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                    {% if share.shared_file.original_filename|endswith:".pdf" %}
                     <i class="fas fa-file-pdf"></i>
-                    {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
-                    file.original_filename|lower|slice:"-4:" == ".png" %}
+                    {% elif share.shared_file.original_filename|endswith:".jpg" %}
+                    <i class="fas fa-file-image"></i>
+                    {% elif share.shared_file.original_filename|endswith:".png" %}
                     <i class="fas fa-file-image"></i>
                     {% else %}
                     <i class="fas fa-file-alt"></i>
@@ -305,27 +308,20 @@
                 </div>
 
                 <div class="file-info">
-                    <h5 class="file-name" title="{{ file.original_filename }}">
-                        {{ file.original_filename }}
+                    <h5 class="file-name" title="{{ share.shared_file.original_filename }}">
+                        {{ share.shared_file.original_filename }}
                     </h5>
                     <div class="file-meta">
                         <i class="far fa-calendar-alt"></i>
-                        {{ file.upload_date|date:"M d, Y" }}
+                        {{ share.shared_file.upload_date|date:"M d, Y" }}
                     </div>
                     <div class="file-meta">
-                        <i class="fas fa-shield-alt text-success"></i>
-                        Encrypted (AES-256)
+                        <i class="fas fa-user"></i>
+                        Shared by <strong>{{ share.shared_file.owner.username }}</strong>
                     </div>
                 </div>
 
-                <div class="shared-by">
-                    <div class="avatar-xs">
-                        {{ file.owner.username|make_list|first|upper }}
-                    </div>
-                    <span>Shared by <strong>{{ file.owner.username }}</strong></span>
-                </div>
-
-                <a href="{% url 'file_sharing:download' file.id %}" class="action-btn">
+                <a href="{% url 'file_sharing:download' share.shared_file.id %}" class="action-btn">
                     <i class="fas fa-download me-2"></i>Download
                 </a>
             </div>

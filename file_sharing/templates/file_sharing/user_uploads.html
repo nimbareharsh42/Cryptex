@@ -324,10 +324,10 @@
             <div class="file-card">
                 <div class="card-top">
                     <div class="file-icon">
-                        {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                        {% if file.original_filename|lower|slice:"-4" == ".pdf" %}
                         <i class="fas fa-file-pdf"></i>
-                        {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
-                        file.original_filename|lower|slice:"-4:" == ".png" %}
+                        {% elif file.original_filename|lower|slice:"-4" == ".jpg" or
+                        file.original_filename|lower|slice:"-4" == ".png" %}
                         <i class="fas fa-file-image"></i>
                         {% else %}
                         <i class="fas fa-file-alt"></i>
@@ -387,9 +387,13 @@
                             </p>
                             <div class="d-flex gap-2 justify-content-center">
                                 <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                                <a href="{% url 'file_sharing:delete' file.id %}" class="btn btn-danger px-4">
-                                    <i class="fas fa-trash me-2"></i>Delete
-                                </a>
+                                <form method="post" action="{% url 'file_sharing:delete' file.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger px-4">
+        <i class="fas fa-trash me-2"></i>Delete
+    </button>
+</form>
+
                             </div>
                         </div>
                     </div>

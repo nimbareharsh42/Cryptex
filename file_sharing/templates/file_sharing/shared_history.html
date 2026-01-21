@@ -1,0 +1,35 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Shared History - Cryptex{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Shared History</h2>
+
+    <h3 class="mt-4">Files You Shared</h3>
+    {% if shared_by_user %}
+        <ul class="list-group">
+            {% for share in shared_by_user %}
+            <li class="list-group-item">
+                <strong>{{ share.shared_file.original_filename }}</strong> shared with <strong>{{ share.shared_with.username }}</strong> on {{ share.shared_file.upload_date|date:"M d, Y" }}
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No files shared by you.</p>
+    {% endif %}
+
+    <h3 class="mt-4">Files You Received</h3>
+    {% if received_by_user %}
+        <ul class="list-group">
+            {% for share in received_by_user %}
+            <li class="list-group-item">
+                <strong>{{ share.shared_file.original_filename }}</strong> received from <strong>{{ share.shared_file.owner.username }}</strong> on {{ share.shared_file.upload_date|date:"M d, Y" }}
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No files received by you.</p>
+    {% endif %}
+</div>
+{% endblock %}

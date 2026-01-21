@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 import os
 from django.conf import settings
+from django.db import IntegrityError
 
 def homepage(request):
     """Homepage for non-authenticated users"""
@@ -164,30 +165,29 @@ def download_file(request, file_id):
 @login_required
 def share_file(request, file_id):
     shared_file = get_object_or_404(SharedFile, id=file_id, owner=request.user)
-    
+
     if request.method == 'POST':
         username = request.POST.get('username')
         can_download = request.POST.get('can_download') == 'on'
         can_share = request.POST.get('can_share') == 'on'
-        
+
         if not username:
             return HttpResponse("Username is required", status=400)
-        
+
         try:
             user_to_share_with = User.objects.get(username=username)
-            
+
             # Check if not sharing with yourself
             if user_to_share_with == request.user:
                 return HttpResponse("You cannot share a file with yourself", status=400)
-            
-            # Check if file is already shared with this user
-            existing_share = FileShare.objects.filter(shared_file=shared_file, shared_with=user_to_share_with).first()
-            if existing_share:
+
+            # Validate if the file is already shared
+            if FileShare.objects.filter(shared_file=shared_file, shared_with=user_to_share_with).exists():
                 return HttpResponse("File is already shared with this user", status=400)
-            
+
             # Get the receiver's public key
             receiver_key = UserKey.objects.get(user=user_to_share_with)
-            
+
             # Decrypt the original encryption key using owner's private key
             owner_key = UserKey.objects.get(user=request.user)
             original_encryption_key = decrypt_with_private_key(
@@ -195,14 +195,14 @@ def share_file(request, file_id):
                 owner_key.private_key_encrypted,
                 password=None
             )
-            
+
             # Re-encrypt the encryption key with receiver's public key
             re_encrypted_key = encrypt_with_public_key(
                 original_encryption_key,
                 receiver_key.public_key
             )
-            
-            # Create share record with the re-encrypted key
+
+            # Create share record
             FileShare.objects.create(
                 shared_file=shared_file,
                 shared_with=user_to_share_with,
@@ -210,7 +210,7 @@ def share_file(request, file_id):
                 can_share=can_share,
                 encrypted_key=re_encrypted_key
             )
-            
+
             # Log the share action
             AccessLog.objects.create(
                 user=request.user,
@@ -219,14 +219,14 @@ def share_file(request, file_id):
                 ip_address=get_client_ip(request),
                 details=f'Shared file with {username}'
             )
-            
+
             return redirect('file_sharing:dashboard')
-                
+
         except User.DoesNotExist:
             return HttpResponse("User not found", status=404)
         except UserKey.DoesNotExist:
             return HttpResponse("User does not have encryption keys", status=400)
-    
+
     return render(request, 'file_sharing/share.html', {'file': shared_file})
 
 
@@ -268,7 +268,7 @@ def delete_file(request, file_id):
 
         file.delete()
 
-        return redirect("file_sharing:dashboard")
+        return redirect(request.META.get("HTTP_REFERER", "file_sharing:dashboard"))
 
     return HttpResponse("Invalid request", status=400)
 
@@ -313,7 +313,7 @@ def shared_with_me(request):
     )
 
     return render(request, 'file_sharing/shared_with_me.html', {
-        'shares': shares
+        'shared_files': shares  # Include details about the file owner
     })
 
 @login_required
@@ -362,14 +362,42 @@ def share_page(request):
             messages.error(request, "User not found")
             return redirect('file_sharing:share_page')
 
-        FileShare.objects.create(
+        # Use get_or_create to prevent duplicate entries
+        file_share, created = FileShare.objects.get_or_create(
             shared_file=shared_file,
             shared_with=recipient
         )
 
-        messages.success(request, "File shared successfully!")
+        if created:
+            messages.success(request, "File shared successfully!")
+        else:
+            messages.info(request, "File has already been shared with this user.")
+
         return redirect('file_sharing:share_page')
 
     return render(request, 'file_sharing/share_page.html', {
         'user_files': user_files
     })
+
+@login_required
+def shared_history(request):
+    # Files shared by the user
+    shared_by_user = FileShare.objects.filter(
+        shared_file__owner=request.user
+    ).select_related('shared_with', 'shared_file')
+
+    # Files received by the user
+    received_by_user = FileShare.objects.filter(
+        shared_with=request.user
+    ).select_related('shared_file', 'shared_file__owner')
+
+    # Debugging logs
+    print("Shared by user:", shared_by_user)
+    print("Received by user:", received_by_user)
+
+    context = {
+        'shared_by_user': shared_by_user,
+        'received_by_user': received_by_user,
+    }
+
+    return render(request, 'file_sharing/shared_history.html', context)
