@@ -651,78 +651,96 @@
                     </div>
                 </div>
 
-                <!-- Recent Files -->
-                <div class="files-card">
-                    <div class="files-header">
-                        <h5><i class="fas fa-file me-2"></i>Your Recent Files</h5>
-                        <span class="badge-count">{{ user_files.count }} files</span>
+                <!-- Quick Actions Section -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="action-card upload-card">
+                            <div class="action-card-header">
+                                <div class="action-icon upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3>Upload Files</h3>
+                                <p>Securely upload your files with AES-256 encryption</p>
+                            </div>
+                            <div class="action-card-body">
+                                <form method="post" action="{% url 'file_sharing:upload' %}"
+                                    enctype="multipart/form-data" id="quickUploadForm" class="upload-form">
+                                    {% csrf_token %}
+                                    <div class="upload-zone" id="uploadZone">
+                                        <i class="fas fa-file-upload fa-3x mb-3 text-primary"></i>
+                                        <p class="mb-2"><strong>Drop files here or click to browse</strong></p>
+                                        <p class="text-muted small">Maximum file size: 100MB</p>
+                                        <input type="file" name="file" id="fileInput" class="d-none" required>
+                                    </div>
+                                    <button type="submit" class="btn-action-primary mt-auto">
+                                        <i class="fas fa-upload me-2"></i>Upload File
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
-                    {% if user_files %}
-                    <div class="table-responsive">
-                        <table class="table files-table">
-                            <thead>
-                                <tr>
-                                    <th>File Name</th>
-                                    <th>Upload Date</th>
-                                    <th>Downloads</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for file in user_files|slice:":5" %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-file fa-lg text-primary me-3"></i>
-                                            <div>
-                                                <div class="file-name">{{ file.original_filename|truncatechars:30 }}
+                    <div class="col-lg-6">
+                        <div class="action-card share-card d-flex flex-column">
+                            <div class="action-card-header">
+                                <div class="action-icon share-icon">
+                                    <i class="fas fa-share-nodes"></i>
+                                </div>
+                                <h3>Share Files</h3>
+                                <p>Share your encrypted files securely with others</p>
+                            </div>
+                            <div class="action-card-body">
+                                {% if user_files %}
+                                <div class="share-file-select">
+                                    <label class="form-label fw-bold mb-2">
+                                        <i class="fas fa-folder-open me-2 text-primary"></i>Select a file to share:
+                                    </label>
+                                    
+                                    <!-- Search Box -->
+                                    <div class="file-search-box mb-2">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" class="form-control file-search-input" id="fileSearchInput" 
+                                               placeholder="Search files..." onkeyup="filterFiles()">
+                                    </div>
+                                    
+                                    <!-- Custom File List -->
+                                    <div class="custom-file-list" id="fileList">
+                                        {% for file in user_files %}
+                                        <div class="file-list-item" data-file-id="{{ file.id }}" 
+                                             data-filename="{{ file.original_filename|lower }}" onclick="selectFile(this)">
+                                            <div class="file-item-icon">
+                                                <i class="fas fa-file-alt"></i>
+                                            </div>
+                                            <div class="file-item-info">
+                                                <div class="file-item-name">{{ file.original_filename }}</div>
+                                                <div class="file-item-meta">
+                                                    <span><i class="fas fa-lock me-1"></i>Encrypted</span>
                                                 </div>
-                                                <div class="file-encrypted">{{ file.encrypted_filename|truncatechars:25
-                                                    }}</div>
+                                            </div>
+                                            <div class="file-item-check">
+                                                <i class="fas fa-check-circle"></i>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div>{{ file.upload_date|date:"M d, Y" }}</div>
-                                        <small class="text-muted">{{ file.upload_date|date:"H:i" }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge-downloads">{{ file.download_count }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{% url 'file_sharing:download' file.id %}"
-                                                class="btn btn-action success">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                            <a href="{% url 'file_sharing:share' file.id %}"
-                                                class="btn btn-action primary">
-                                                <i class="fas fa-share"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-action danger" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal{{ file.id }}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-folder-open"></i>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <button type="button" class="btn-action-primary mt-3" id="shareBtn"
+                                        onclick="shareSelectedFile()" disabled>
+                                        <i class="fas fa-share me-2"></i>Share Selected File
+                                    </button>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-3">No files available. Upload a file first!</p>
+                                    <a href="{% url 'file_sharing:upload' %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-upload me-1"></i>Upload File
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <h4 class="empty-title">No files uploaded yet</h4>
-                        <p class="empty-text">Start by uploading your first file to get started!</p>
-                        <a href="{% url 'file_sharing:upload' %}" class="btn-upload">
-                            <i class="fas fa-upload me-2"></i>Upload Your First File
-                        </a>
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
@@ -731,34 +749,466 @@
     </div>
 </div>
 
-<!-- Delete Modals -->
-{% for file in user_files %}
-<div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 12px; border: none;">
-            <div class="modal-header" style="border-bottom: 1px solid #e9ecef;">
-                <h5 class="modal-title text-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete:</p>
-                <div class="alert alert-warning" style="border-radius: 8px;">
-                    <strong>{{ file.original_filename }}</strong>
-                </div>
-            </div>
-            <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    style="border-radius: 6px;">Cancel</button>
-                <form method="post" action="{% url 'file_sharing:delete' file.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger" style="border-radius: 6px;">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
+<style>
+    /* Action Cards Styling */
+    .action-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .action-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .upload-form {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        flex: 1;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.2);
+    }
+
+    .action-card-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .upload-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .share-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .action-card:hover .action-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .action-card-header h3 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: #1a2332;
+    }
+
+    .action-card-header p {
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .upload-zone {
+        border: 3px dashed #dee2e6;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0;
+    }
+
+    .upload-zone:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .upload-zone.dragover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transform: scale(1.02);
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(245, 147, 251, 0.05) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        font-weight: 600;
+    }
+
+    .info-item i {
+        font-size: 1.25rem;
+    }
+
+    .btn-action-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-weight: 700;
+        width: 100%;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        cursor: pointer;
+        margin-top: 1rem;
+    }
+
+    .btn-action-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .share-file-select .form-select {
+        border-radius: 10px;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .share-file-select .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    /* Enhanced File Selection Styles */
+    .file-search-box {
+        position: relative;
+    }
+
+    .file-search-box .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 1;
+    }
+
+    .file-search-input {
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .file-search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        outline: none;
+    }
+
+    .custom-file-list {
+        height: 280px;
+        max-height: 280px;
+        min-height: 280px;
+        overflow-y: auto;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: #fafbfc;
+    }
+
+    .custom-file-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .custom-file-list::-webkit-scrollbar-track {
+        background: #f1f3f5;
+        border-radius: 10px;
+    }
+
+    .custom-file-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+
+    .file-list-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .file-list-item:hover {
+        transform: translateX(5px);
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .file-list-item.selected {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .file-list-item.hidden {
+        display: none;
+    }
+
+    .file-item-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .file-list-item:hover .file-item-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .file-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-item-name {
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-item-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-item-check {
+        color: #667eea;
+        font-size: 1.5rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .file-list-item.selected .file-item-check {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .btn-action-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-action-primary:disabled:hover {
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Ensure equal height and spacing for share section */
+    .share-file-select {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .share-file-select .custom-file-list {
+        flex: 1;
+    }
+
+    /* Responsive adjustments for action cards */
+    @media (max-width: 991px) {
+        .custom-file-list {
+            height: 250px;
+            max-height: 250px;
+            min-height: 250px;
+        }
+        
+        .upload-zone {
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .action-card {
+            padding: 1.5rem;
+        }
+
+        .custom-file-list {
+            height: 220px;
+            max-height: 220px;
+            min-height: 220px;
+        }
+
+        .upload-zone {
+            padding: 1.5rem 1rem;
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+
+        .action-card-header h3 {
+            font-size: 1.25rem;
+        }
+    }
+
+</style>
+
+<script>
+    // File upload drag and drop functionality
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+
+    if (uploadZone && fileInput) {
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateUploadZoneText();
+            }
+        });
+
+        fileInput.addEventListener('change', updateUploadZoneText);
+
+        function updateUploadZoneText() {
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                uploadZone.innerHTML = `
+                    <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                    <p class="mb-2"><strong>${fileName}</strong></p>
+                    <p class="text-muted small">Click to choose a different file</p>
+                `;
+            }
+        }
+    }
+
+    // Enhanced file selection functionality
+    let selectedFileId = null;
+
+    function selectFile(element) {
+        // Remove selection from all items
+        document.querySelectorAll('.file-list-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // Add selection to clicked item
+        element.classList.add('selected');
+        selectedFileId = element.getAttribute('data-file-id');
+
+        // Enable share button
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.disabled = false;
+        }
+    }
+
+    function shareSelectedFile() {
+        if (selectedFileId) {
+            window.location.href = `/share/${selectedFileId}/`;
+        } else {
+            alert('Please select a file to share');
+        }
+    }
+
+    // File search/filter functionality
+    function filterFiles() {
+        const searchInput = document.getElementById('fileSearchInput');
+        const filterValue = searchInput.value.toLowerCase().trim();
+        const fileItems = document.querySelectorAll('.file-list-item');
+        
+        let visibleCount = 0;
+        fileItems.forEach(item => {
+            const filename = item.getAttribute('data-filename');
+            if (filename.includes(filterValue)) {
+                item.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+                // Deselect if hidden
+                if (item.classList.contains('selected')) {
+                    item.classList.remove('selected');
+                    selectedFileId = null;
+                    const shareBtn = document.getElementById('shareBtn');
+                    if (shareBtn) {
+                        shareBtn.disabled = true;
+                    }
+                }
+            }
+        });
+
+        // Optional: Show "no results" message
+        const fileList = document.getElementById('fileList');
+        let noResultsMsg = document.getElementById('noResultsMsg');
+        
+        if (visibleCount === 0 && filterValue !== '') {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'noResultsMsg';
+                noResultsMsg.className = 'text-center py-4 text-muted';
+                noResultsMsg.innerHTML = '<i class="fas fa-search mb-2"></i><p>No files found matching your search</p>';
+                fileList.appendChild(noResultsMsg);
+            }
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+</script>
 
 {% endblock %}

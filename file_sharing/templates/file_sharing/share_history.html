@@ -1,0 +1,526 @@
+{% extends 'file_sharing/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Share History - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    /* Page Container */
+    .shared-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .shared-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Header Section */
+    .page-header {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(26, 35, 50, 0.15);
+    }
+
+    .header-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .page-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        max-width: 600px;
+    }
+
+    /* Tab Navigation */
+    .tab-navigation {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 1rem 2rem;
+        border: none;
+        background: transparent;
+        border-radius: 12px;
+        font-weight: 600;
+        color: #64748b;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .tab-btn:hover:not(.active) {
+        background: #f8fafc;
+    }
+
+    /* Search/Filter Bar */
+    .filter-bar {
+        background: white;
+        padding: 1rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    /* Files List Styling */
+    .files-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .file-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .file-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .file-card:hover::before {
+        opacity: 1;
+    }
+
+    .file-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .file-info {
+        flex: 1;
+    }
+
+    .file-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a2332;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .shared-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+
+    .avatar-xs {
+        width: 24px;
+        height: 24px;
+        background: #cbd5e1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: white;
+        font-weight: 600;
+    }
+
+    .action-btn {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #667eea;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+
+    .action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* Tab Content */
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 1rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .empty-illustration {
+        width: 100px;
+        height: 100px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #667eea;
+        margin: 0 auto 1.5rem;
+    }
+</style>
+
+<div class="shared-page">
+    <div class="container-custom">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-overlay"></div>
+            <div class="header-content d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title">Share History</h1>
+                    <p class="page-description">
+                        View files you've shared with others and files shared with you.
+                    </p>
+                </div>
+                <div class="d-none d-md-block">
+                    <i class="fas fa-exchange-alt" style="font-size: 5rem; opacity: 0.1;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('received')">
+                <i class="fas fa-inbox me-2"></i>Received Files ({{ received_by_user.count }})
+            </button>
+            <button class="tab-btn" onclick="switchTab('shared')">
+                <i class="fas fa-paper-plane me-2"></i>Shared by Me ({{ shared_by_user.count }})
+            </button>
+        </div>
+
+        <!-- Received Files Tab -->
+        <div id="receivedTab" class="tab-content active">
+            {% if received_by_user %}
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search received files..." id="receivedSearch">
+                </div>
+                <div class="text-muted small">
+                    Showing {{ received_by_user.count }} files
+                </div>
+            </div>
+
+            <!-- Files Grid -->
+            <div class="files-container" id="receivedGrid">
+                {% for share in received_by_user %}
+                <div class="file-card" data-filename="{{ share.shared_file.original_filename }}" data-owner="{{ share.shared_file.owner.username }}">
+                    <div class="file-icon-wrapper">
+                        {% if share.shared_file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                        <i class="fas fa-file-pdf"></i>
+                        {% elif share.shared_file.original_filename|lower|slice:"-4:" == ".jpg" or share.shared_file.original_filename|lower|slice:"-4:" == ".png" %}
+                        <i class="fas fa-file-image"></i>
+                        {% else %}
+                        <i class="fas fa-file-alt"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="file-info">
+                        <h5 class="file-name" title="{{ share.shared_file.original_filename }}">
+                            {{ share.shared_file.original_filename }}
+                        </h5>
+                        <div class="file-meta">
+                            <i class="far fa-calendar-alt"></i>
+                            {{ share.shared_file.upload_date|date:"M d, Y" }}
+                        </div>
+                        <div class="shared-info">
+                            <div class="avatar-xs">{{ share.shared_file.owner.username|first|upper }}</div>
+                            Shared by <strong>{{ share.shared_file.owner.username }}</strong>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'file_sharing:download' share.shared_file.id %}" class="action-btn">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-illustration">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>No files received yet</h3>
+                <p class="text-muted mb-4">When someone shares a file with you, it will appear here.</p>
+                <a href="{% url 'file_sharing:dashboard' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                    Go to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Shared by Me Tab -->
+        <div id="sharedTab" class="tab-content">
+            {% if shared_by_user %}
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search shared files..." id="sharedSearch">
+                </div>
+                <div class="text-muted small">
+                    Showing {{ shared_by_user.count }} files
+                </div>
+            </div>
+
+            <!-- Files Grid -->
+            <div class="files-container" id="sharedGrid">
+                {% for share in shared_by_user %}
+                <div class="file-card" data-filename="{{ share.shared_file.original_filename }}" data-recipient="{{ share.shared_with.username }}">
+                    <div class="file-icon-wrapper">
+                        {% if share.shared_file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                        <i class="fas fa-file-pdf"></i>
+                        {% elif share.shared_file.original_filename|lower|slice:"-4:" == ".jpg" or share.shared_file.original_filename|lower|slice:"-4:" == ".png" %}
+                        <i class="fas fa-file-image"></i>
+                        {% else %}
+                        <i class="fas fa-file-alt"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="file-info">
+                        <h5 class="file-name" title="{{ share.shared_file.original_filename }}">
+                            {{ share.shared_file.original_filename }}
+                        </h5>
+                        <div class="file-meta">
+                            <i class="far fa-calendar-alt"></i>
+                            {{ share.shared_file.upload_date|date:"M d, Y" }}
+                        </div>
+                        <div class="shared-info">
+                            <div class="avatar-xs">{{ share.shared_with.username|first|upper }}</div>
+                            Shared with <strong>{{ share.shared_with.username }}</strong>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'file_sharing:download' share.shared_file.id %}" class="action-btn">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-illustration">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3>No files shared yet</h3>
+                <p class="text-muted mb-4">Start sharing files with other users from your dashboard.</p>
+                <a href="{% url 'file_sharing:dashboard' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                    Go to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching functionality
+    function switchTab(tab) {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        if (tab === 'received') {
+            tabs[0].classList.add('active');
+            document.getElementById('receivedTab').classList.add('active');
+        } else {
+            tabs[1].classList.add('active');
+            document.getElementById('sharedTab').classList.add('active');
+        }
+    }
+
+    // Search functionality for received files
+    document.getElementById('receivedSearch')?.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const cards = document.querySelectorAll('#receivedGrid .file-card');
+
+        cards.forEach(card => {
+            const fileName = card.dataset.filename.toLowerCase();
+            const owner = card.dataset.owner.toLowerCase();
+
+            if (fileName.includes(searchText) || owner.includes(searchText)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Search functionality for shared files
+    document.getElementById('sharedSearch')?.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const cards = document.querySelectorAll('#sharedGrid .file-card');
+
+        cards.forEach(card => {
+            const fileName = card.dataset.filename.toLowerCase();
+            const recipient = card.dataset.recipient.toLowerCase();
+
+            if (fileName.includes(searchText) || recipient.includes(searchText)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

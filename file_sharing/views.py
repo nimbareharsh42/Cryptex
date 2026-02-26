@@ -305,16 +305,23 @@ def user_uploads(request):
     return render(request, 'file_sharing/user_uploads.html', {'user_files': user_files})
 
 @login_required
-def shared_with_me(request):
-    shares = (
-        FileShare.objects
-        .filter(shared_with=request.user)
-        .select_related('shared_file', 'shared_file__owner')
-    )
+def share_history(request):
+    # Files shared by the user
+    shared_by_user = FileShare.objects.filter(
+        shared_file__owner=request.user
+    ).select_related('shared_with', 'shared_file')
 
-    return render(request, 'file_sharing/shared_with_me.html', {
-        'shared_files': shares  # Include details about the file owner
-    })
+    # Files received by the user
+    received_by_user = FileShare.objects.filter(
+        shared_with=request.user
+    ).select_related('shared_file', 'shared_file__owner')
+
+    context = {
+        'shared_by_user': shared_by_user,
+        'received_by_user': received_by_user,
+    }
+
+    return render(request, 'file_sharing/share_history.html', context)
 
 @login_required
 def feedback(request):
@@ -378,26 +385,3 @@ def share_page(request):
     return render(request, 'file_sharing/share_page.html', {
         'user_files': user_files
     })
-
-@login_required
-def shared_history(request):
-    # Files shared by the user
-    shared_by_user = FileShare.objects.filter(
-        shared_file__owner=request.user
-    ).select_related('shared_with', 'shared_file')
-
-    # Files received by the user
-    received_by_user = FileShare.objects.filter(
-        shared_with=request.user
-    ).select_related('shared_file', 'shared_file__owner')
-
-    # Debugging logs
-    print("Shared by user:", shared_by_user)
-    print("Received by user:", received_by_user)
-
-    context = {
-        'shared_by_user': shared_by_user,
-        'received_by_user': received_by_user,
-    }
-
-    return render(request, 'file_sharing/shared_history.html', context)

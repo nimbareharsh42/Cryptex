@@ -15,7 +15,7 @@ urlpatterns = [
     path('share/<int:file_id>/', views.share_file, name='share'),
     path('delete/<int:file_id>/', views.delete_file, name='delete'),
     path('audit-logs/', views.audit_logs, name='audit_logs'),
-    path('shared-with-me/', views.shared_with_me, name='shared_with_me'),
+    path('share-history/', views.share_history, name='share_history'),
     path('share/', views.share_page, name='share_page'),
 
     # path('chat/', ),

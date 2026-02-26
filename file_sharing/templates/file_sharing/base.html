@@ -377,6 +377,68 @@
             border-radius: 5px;
         }
 
+        /* Responsive Navbar Styles */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: rgba(15, 20, 25, 0.98);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                padding: 1rem;
+                margin-top: 1rem;
+                border-radius: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .navbar-nav {
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.75rem 1rem !important;
+                margin: 0.25rem 0;
+            }
+
+            .navbar-collapse .d-flex {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .dropdown-menu {
+                background: rgba(26, 35, 50, 0.95) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            }
+
+            .dropdown-item {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
+
+            .dropdown-item:hover {
+                background: rgba(102, 126, 234, 0.2) !important;
+                color: white !important;
+            }
+        }
+
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggler:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.5);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
         .speed-indicator {
             font-size: 0.875rem;
             color: #6c757d;
@@ -603,99 +665,94 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-
             {%if user.is_authenticated %}
             <a class="navbar-brand" id="icon-route" href="{% url 'file_sharing:dashboard' %}">
                 <i class="fas fa-lock me-2"></i>CRYPTEX
             </a>
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-                        href="{% url 'file_sharing:dashboard' %}">
-                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'upload' %}active{% endif %}"
-                        href="{% url 'file_sharing:upload' %}">
-                        <i class="fas fa-upload me-1"></i>Upload
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'user_uploads' %}active{% endif %}"
-                        href="{% url 'file_sharing:user_uploads' %}">
-                        <i class="fas fa-folder me-1"></i>My Uploads
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'shared_with_me' %}active{% endif %}"
-                        href="{% url 'file_sharing:shared_with_me' %}">
-                        <i class="fas fa-share-alt me-1"></i>Shared With Me
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'share_page' %}active{% endif %}"
-                        href="{% url 'file_sharing:share_page' %}">
-                        <i class="fas fa-paper-plane me-1"></i>Quick Share
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}"
-                        href="{% url 'file_sharing:audit_logs' %}">
-                        <i class="fas fa-clipboard-list me-1"></i>Shared History
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'feedback' %}active{% endif %}"
-                        href="{% url 'file_sharing:feedback' %}">
-                        <i class="fas fa-comment me-1"></i>Feedback
-                    </a>
-                </li>
+            
+            <!-- Hamburger Menu Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            </ul>
+            <!-- Collapsible Navbar Content -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                            href="{% url 'file_sharing:dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'user_uploads' %}active{% endif %}"
+                            href="{% url 'file_sharing:user_uploads' %}">
+                            <i class="fas fa-folder me-1"></i>My Uploads
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'share_history' %}active{% endif %}"
+                            href="{% url 'file_sharing:share_history' %}">
+                            <i class="fas fa-exchange-alt me-1"></i>Share History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}"
+                            href="{% url 'file_sharing:audit_logs' %}">
+                            <i class="fas fa-clipboard-list me-1"></i>Audit Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'feedback' %}active{% endif %}"
+                            href="{% url 'file_sharing:feedback' %}">
+                            <i class="fas fa-comment me-1"></i>Feedback
+                        </a>
+                    </li>
+                </ul>
 
-            <!-- Menu bar(hamburger) -->
-            <div class="d-flex align-items-center">
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle text-light d-flex align-items-center" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="profile-avatar-sm me-2">
-                            {{ user.username|make_list|first|upper }}
-                        </div>
-                        <span class="d-none d-lg-inline">{{ user.username }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg"
-                        style="border-radius: 16px; min-width: 240px; margin-top: 10px;">
-                        <li class="px-3 py-2 border-bottom mb-2">
-                            <span class="d-block text-muted" style="font-size: 0.85rem;">Signed in as</span>
-                            <div class="fw-bold text-dark d-flex align-items-center gap-2 mt-1">
-                                <span class="profile-avatar-sm" style="width: 24px; height: 24px; font-size: 10px;">
-                                    {{ user.username|make_list|first|upper }}
-                                </span>
-                                {{ user.username }}
+                <!-- Profile Dropdown -->
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle text-light d-flex align-items-center" href="#" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="profile-avatar-sm me-2">
+                                {{ user.username|make_list|first|upper }}
                             </div>
-                        </li>
-                        <li>
-                            <a class="dropdown-item rounded-3 mb-1 py-2 d-flex align-items-center gap-3"
-                                href="{% url 'file_sharing:profile' %}">
-                                <i class="fas fa-user-cog text-primary" style="width: 20px;"></i>
-                                <span>My Profile</span>
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider my-2 opacity-50">
-                        </li>
-                        <li>
-                            <form method="post" action="{% url 'file_sharing:logout' %}">
-                                {% csrf_token %}
-                                <button type="submit"
-                                    class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-3 text-danger">
-                                    <i class="fas fa-sign-out-alt" style="width: 20px;"></i>
-                                    <span>Sign Out</span>
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+                            <span>{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg"
+                            style="border-radius: 16px; min-width: 240px; margin-top: 10px;">
+                            <li class="px-3 py-2 border-bottom mb-2">
+                                <span class="d-block text-muted" style="font-size: 0.85rem;">Signed in as</span>
+                                <div class="fw-bold text-dark d-flex align-items-center gap-2 mt-1">
+                                    <span class="profile-avatar-sm" style="width: 24px; height: 24px; font-size: 10px;">
+                                        {{ user.username|make_list|first|upper }}
+                                    </span>
+                                    {{ user.username }}
+                                </div>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 mb-1 py-2 d-flex align-items-center gap-3"
+                                    href="{% url 'file_sharing:profile' %}">
+                                    <i class="fas fa-user-cog text-primary" style="width: 20px;"></i>
+                                    <span>My Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider my-2 opacity-50">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'file_sharing:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                        class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-3 text-danger">
+                                        <i class="fas fa-sign-out-alt" style="width: 20px;"></i>
+                                        <span>Sign Out</span>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             {%else%}
@@ -714,13 +771,8 @@
                         <i class="fas fa-sign-in-alt me-1"></i>Login
                     </a>
                 </div>
-                {% endif %}
-                <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav"> -->
-
             </div>
+            {% endif %}
         </div>
     </nav>
 
