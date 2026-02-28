@@ -12,6 +12,7 @@ from django.contrib import messages
 import os
 from django.conf import settings
 from django.db import IntegrityError
+from .models import Feedback
 
 def homepage(request):
     """Homepage for non-authenticated users"""
@@ -48,44 +49,68 @@ def dashboard(request):
 @login_required
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
-        uploaded_file = request.FILES['file']
-        
-        # Show progress in UI (the actual progress is handled by JavaScript)
-        # Generate encryption key
-        encryption_key = os.urandom(32)
-        
-        # Encrypt the file
-        encrypted_filename, encrypted_data = encrypt_file(uploaded_file, encryption_key)
-        
-        # Save encrypted file to disk
-        file_path = os.path.join(settings.MEDIA_ROOT, 'encrypted_files', encrypted_filename)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, 'wb') as f:
-            f.write(encrypted_data)
-        
-        # Encrypt the encryption key with user's public key
-        user_key = UserKey.objects.get(user=request.user)
-        encrypted_key = encrypt_with_public_key(encryption_key, user_key.public_key)
-        
-        # Save file record to database
-        shared_file = SharedFile(
-            owner=request.user,
-            original_filename=uploaded_file.name,
-            encrypted_filename=encrypted_filename,
-            encryption_key=encrypted_key
-        )
-        shared_file.save()
-        
-        # Log the upload
-        AccessLog.objects.create(
-            user=request.user,
-            file=shared_file,
-            access_type='UPLOAD',
-            ip_address=get_client_ip(request),
-            details=f'Uploaded file: {uploaded_file.name}'
-        )
-        
-        return JsonResponse({'status': 'success'})
+        try:
+            uploaded_file = request.FILES['file']
+            
+            # Show progress in UI (the actual progress is handled by JavaScript)
+            # Generate encryption key
+            encryption_key = os.urandom(32)
+            
+            # Encrypt the file
+            encrypted_filename, encrypted_data = encrypt_file(uploaded_file, encryption_key)
+            
+            # Save encrypted file to disk
+            file_path = os.path.join(settings.MEDIA_ROOT, 'encrypted_files', encrypted_filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, 'wb') as f:
+                f.write(encrypted_data)
+            
+            # Encrypt the encryption key with user's public key
+            user_key = UserKey.objects.get(user=request.user)
+            encrypted_key = encrypt_with_public_key(encryption_key, user_key.public_key)
+            
+            # Save file record to database
+            shared_file = SharedFile(
+                owner=request.user,
+                original_filename=uploaded_file.name,
+                encrypted_filename=encrypted_filename,
+                encryption_key=encrypted_key
+            )
+            shared_file.save()
+            
+            # Log the upload
+            AccessLog.objects.create(
+                user=request.user,
+                file=shared_file,
+                access_type='UPLOAD',
+                ip_address=get_client_ip(request),
+                details=f'Uploaded file: {uploaded_file.name}'
+            )
+            
+            # Return JSON for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'File uploaded successfully',
+                    'file_id': shared_file.id,
+                    'filename': uploaded_file.name
+                })
+            
+            # Redirect for regular form submissions
+            messages.success(request, f'File "{uploaded_file.name}" uploaded successfully!')
+            return redirect('file_sharing:dashboard')
+            
+        except Exception as e:
+            # Return JSON error for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=400)
+            
+            # Show error message for regular form submissions
+            messages.error(request, f'Error uploading file: {str(e)}')
+            return redirect('file_sharing:upload')
     
     return render(request, 'file_sharing/upload.html')
 
@@ -385,3 +410,15 @@ def share_page(request):
     return render(request, 'file_sharing/share_page.html', {
         'user_files': user_files
     })
+
+def submit_feedback(request):
+    if request.method == "POST":
+        Feedback.objects.create(
+            name=request.POST["name"],
+            email=request.POST["email"],
+            message=request.POST["message"],
+            rating=request.POST["rating"]
+        )
+        return redirect("thank_you")
+
+    return render(request, "feedback.html")

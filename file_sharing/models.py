@@ -4,6 +4,7 @@ from django.utils import timezone
 from cryptography.fernet import Fernet
 import base64
 import os
+from cloudinary.models import CloudinaryField
 
 class SharedFile(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -56,3 +57,19 @@ class AccessLog(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.access_type} - {self.access_date}"
+    
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    rating = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+class UploadedFile(models.Model):
+    title = models.CharField(max_length=100)
+    file = CloudinaryField('file')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

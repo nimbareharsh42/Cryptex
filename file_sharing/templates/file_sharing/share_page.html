@@ -1,18 +1,32 @@
 {% extends 'file_sharing/base.html' %}
 
-{% block title %}Quick Share - Cryptex{% endblock %}
+{% block title %}Share Files - Cryptex{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* Reuse shared styling */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
     .share-page {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         margin: -1.5rem -15px 0 -15px;
-        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f1f3f5 100%);
         min-height: calc(100vh - 200px);
         padding: 2rem 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: relative;
+    }
+
+    .share-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 30%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+        pointer-events: none;
     }
 
     @media (min-width: 768px) {
@@ -21,123 +35,760 @@
         }
     }
 
-    .share-card {
-        background: white;
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
         border-radius: 24px;
-        padding: 3rem;
-        width: 100%;
-        max-width: 600px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(26, 35, 50, 0.15);
+    }
+
+    .header-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(to right, #fff, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .page-description {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        max-width: 700px;
+    }
+
+    /* Share Card Grid */
+    .share-form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+
+    @media (min-width: 992px) {
+        .share-form-grid {
+            grid-template-columns: 1.2fr 1fr;
+        }
+    }
+
+    /* Share Card */
+    .share-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 2.5rem;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
-    .share-header {
-        text-align: center;
-        margin-bottom: 2rem;
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1a2332;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
-    .share-icon {
-        width: 80px;
-        height: 80px;
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-        border-radius: 50%;
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
-        margin: 0 auto 1.5rem;
+        color: white;
+    }
+
+    /* File Selection */
+    .file-search-box {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .file-search-box .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 1;
+    }
+
+    .file-search-input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .file-search-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+        outline: none;
+    }
+
+    .custom-file-list {
+        max-height: 350px;
+        overflow-y: auto;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: #fafbfc;
+        margin-bottom: 1.5rem;
+    }
+
+    .custom-file-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .custom-file-list::-webkit-scrollbar-track {
+        background: #f1f3f5;
+        border-radius: 10px;
+    }
+
+    .custom-file-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 10px;
+    }
+
+    .file-list-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .file-list-item:hover {
+        transform: translateX(5px);
+        border-color: #4f46e5;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .file-list-item.selected {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+        border-color: #4f46e5;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .file-list-item.hidden {
+        display: none;
+    }
+
+    .file-item-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .file-list-item:hover .file-item-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .file-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-item-name {
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-item-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-item-check {
+        color: #4f46e5;
+        font-size: 1.75rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .file-list-item.selected .file-item-check {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    /* Recipient Input */
+    .form-group {
+        margin-bottom: 1.5rem;
     }
 
     .form-label {
-        font-weight: 600;
+        font-weight: 700;
         color: #334155;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
         display: block;
+        font-size: 1rem;
     }
 
-    .form-control,
-    .form-select {
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 0.875rem 1rem;
-        border: 2px solid #e2e8f0;
+        font-size: 0.95rem;
         font-weight: 500;
         transition: all 0.3s ease;
     }
 
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    .form-control:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+        outline: none;
     }
 
-    .btn-submit {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Buttons */
+    .btn-share {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         color: white;
         border: none;
-        padding: 1rem;
+        padding: 1rem 2rem;
         border-radius: 12px;
         font-weight: 700;
+        font-size: 1rem;
         width: 100%;
-        margin-top: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.75rem;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        cursor: pointer;
+    }
+
+    .btn-share:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+
+    .btn-share:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-cancel {
+        display: block;
+        text-align: center;
+        margin-top: 1rem;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        color: #4f46e5;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1.5rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .share-card {
+            padding: 1.5rem;
+        }
+
+        .custom-file-list {
+            max-height: 300px;
+        }
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 35, 50, 0.8);
+        backdrop-filter: blur(12px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: white;
+        text-align: center;
+    }
+
+    .loader-content {
+        max-width: 400px;
+        padding: 2rem;
+    }
+
+    .security-ring {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 2rem;
+    }
+
+    .ring-outer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 4px solid rgba(79, 70, 229, 0.2);
+        border-top-color: #4f46e5;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+    }
+
+    .ring-inner {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 70px;
+        height: 70px;
+        border: 4px solid rgba(124, 58, 237, 0.2);
+        border-bottom-color: #7c3aed;
+        border-radius: 50%;
+        animation: spin-reverse 1.5s linear infinite;
+    }
+
+    .shield-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        color: #fff;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .security-status-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, #fff, #c7d2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .security-details {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1.5rem;
+    }
+
+    .security-step {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+        opacity: 0;
+        transform: translateX(-10px);
         transition: all 0.3s ease;
     }
 
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        color: white;
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    .security-step.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .security-step i {
+        color: #10b981;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin-reverse {
+        to {
+            transform: rotate(-360deg);
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: translate(-50%, -50%) scale(1.1);
+            opacity: 0.8;
+        }
     }
 </style>
 
 <div class="share-page">
-    <div class="share-card">
-        <div class="share-header">
-            <div class="share-icon">
-                <i class="fas fa-paper-plane"></i>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader-content">
+            <div class="security-ring">
+                <div class="ring-outer"></div>
+                <div class="ring-inner"></div>
+                <i class="fas fa-shield-halved shield-icon"></i>
             </div>
-            <h2>Quick Share</h2>
-            <p class="text-muted">Select a file and recipient to share securely.</p>
-        </div>
+            <h2 class="security-status-title">Securing Your Share</h2>
 
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="mb-4">
-                <label class="form-label">Select File to Share</label>
-                <select name="file_id" class="form-select" required>
-                    <option value="">-- Choose a encrypted file --</option>
-                    {% for file in user_files %}
-                    <option value="{{ file.id }}">{{ file.original_filename }}</option>
-                    {% empty %}
-                    <option disabled>No files available (Upload one first!)</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Recipient Username</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"
-                        style="border-radius: 12px 0 0 12px; border: 2px solid #e2e8f0; border-right: none;">
-                        <i class="fas fa-user text-muted"></i>
-                    </span>
-                    <input type="text" name="username" class="form-control border-start-0"
-                        placeholder="Enter username..." style="border-radius: 0 12px 12px 0;" required>
+            <div class="security-details" id="securityTimeline">
+                <div class="security-step" id="step1">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Establishing RSA handshake...</span>
+                </div>
+                <div class="security-step" id="step2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Generating AES-256 session key...</span>
+                </div>
+                <div class="security-step" id="step3">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Encrypting file metadata...</span>
+                </div>
+                <div class="security-step" id="step4">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Verifying recipient integrity...</span>
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-share-square"></i> Share Now
-            </button>
+            <p class="mb-0 text-white-50 small">
+                <i class="fas fa-lock me-1"></i> End-to-End Encryption Active
+            </p>
+        </div>
+    </div>
 
-            <a href="{% url 'file_sharing:dashboard' %}"
-                class="d-block text-center mt-3 text-muted text-decoration-none small fw-bold">Cancel</a>
-        </form>
+    <div class="container-custom">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-overlay"></div>
+            <div class="header-content d-flex justify-content-between align-items-center flex-wrap gap-4">
+                <div>
+                    <h1 class="page-title">Share Files Securely</h1>
+                    <p class="page-description">
+                        Select a file from your vault and share it with another user. All files remain encrypted
+                        end-to-end.
+                    </p>
+                </div>
+                <div class="d-none d-md-block">
+                    <a href="{% url 'file_sharing:share_history' %}"
+                        class="btn btn-light px-4 py-2 rounded-pill fw-bold"
+                        style="box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <i class="fas fa-history me-2"></i>View History
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Form Card -->
+        <div class="share-card">
+            {% if user_files %}
+            <form method="post" id="shareForm">
+                {% csrf_token %}
+
+                <div class="share-form-grid">
+                    <!-- Left Column: File Selection -->
+                    <div class="file-selection-section">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <span>Select File to Share</span>
+                        </div>
+
+                        <!-- Search Box -->
+                        <div class="file-search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="file-search-input" id="fileSearchInput"
+                                placeholder="Search your files..." onkeyup="filterFiles()">
+                        </div>
+
+                        <!-- File List -->
+                        <div class="custom-file-list" id="fileList">
+                            {% for file in user_files %}
+                            <div class="file-list-item" data-file-id="{{ file.id }}"
+                                data-filename="{{ file.original_filename|lower }}" onclick="selectFile(this)">
+                                <div class="file-item-icon">
+                                    {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
+                                    <i class="fas fa-file-pdf"></i>
+                                    {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
+                                    file.original_filename|lower|slice:"-5:" == ".jpeg" or
+                                    file.original_filename|lower|slice:"-4:" == ".png" %}
+                                    <i class="fas fa-file-image"></i>
+                                    {% elif file.original_filename|lower|slice:"-4:" == ".doc" or
+                                    file.original_filename|lower|slice:"-5:" == ".docx" %}
+                                    <i class="fas fa-file-word"></i>
+                                    {% elif file.original_filename|lower|slice:"-4:" == ".xls" or
+                                    file.original_filename|lower|slice:"-5:" == ".xlsx" %}
+                                    <i class="fas fa-file-excel"></i>
+                                    {% else %}
+                                    <i class="fas fa-file-alt"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="file-item-info">
+                                    <div class="file-item-name" title="{{ file.original_filename }}">
+                                        {{ file.original_filename }}
+                                    </div>
+                                    <div class="file-item-meta">
+                                        <span><i class="fas fa-lock me-1"></i>Encrypted</span>
+                                        <span><i class="far fa-calendar me-1"></i>{{ file.upload_date|date:"M d, Y"
+                                            }}</span>
+                                    </div>
+                                </div>
+                                <div class="file-item-check">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="file_id" id="selectedFileId" required>
+                    </div>
+
+                    <!-- Right Column: Recipient & Actions -->
+                    <div class="recipient-section">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span>Recipient Details</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Recipient Username</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-at input-icon"></i>
+                                <input type="text" name="username" class="form-control"
+                                    placeholder="Enter the recipient's username..." required>
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>The recipient must have an account to receive the
+                                file
+                            </small>
+                        </div>
+
+                        <div class="actions-section mt-5">
+                            <!-- Share Button -->
+                            <button type="submit" class="btn-share" id="shareButton" disabled>
+                                <i class="fas fa-paper-plane"></i> Share File
+                            </button>
+
+                            <a href="{% url 'file_sharing:dashboard' %}" class="btn-cancel">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <h3 class="mb-3">No Files Available</h3>
+                <p class="text-muted mb-4">You need to upload files before you can share them.</p>
+                <a href="{% url 'file_sharing:upload' %}" class="btn-share d-inline-flex" style="width: auto;">
+                    <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                </a>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+    let selectedFileId = null;
+
+    function selectFile(element) {
+        // Remove selection from all items
+        document.querySelectorAll('.file-list-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // Add selection to clicked item
+        element.classList.add('selected');
+        selectedFileId = element.getAttribute('data-file-id');
+
+        // Update hidden input
+        document.getElementById('selectedFileId').value = selectedFileId;
+
+        // Enable share button
+        const shareButton = document.getElementById('shareButton');
+        if (shareButton) {
+            shareButton.disabled = false;
+        }
+    }
+
+    function filterFiles() {
+        const searchInput = document.getElementById('fileSearchInput');
+        const filterValue = searchInput.value.toLowerCase().trim();
+        const fileItems = document.querySelectorAll('.file-list-item');
+
+        let visibleCount = 0;
+        fileItems.forEach(item => {
+            const filename = item.getAttribute('data-filename');
+            if (filename.includes(filterValue)) {
+                item.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+                // Deselect if hidden
+                if (item.classList.contains('selected')) {
+                    item.classList.remove('selected');
+                    selectedFileId = null;
+                    document.getElementById('selectedFileId').value = '';
+                    const shareButton = document.getElementById('shareButton');
+                    if (shareButton) {
+                        shareButton.disabled = true;
+                    }
+                }
+            }
+        });
+
+        // Show "no results" message
+        const fileList = document.getElementById('fileList');
+        let noResultsMsg = document.getElementById('noResultsMsg');
+
+        if (visibleCount === 0 && filterValue !== '') {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'noResultsMsg';
+                noResultsMsg.className = 'text-center py-4 text-muted';
+                noResultsMsg.innerHTML = '<i class="fas fa-search mb-2 d-block" style="font-size: 2rem;"></i><p class="mb-0">No files found matching your search</p>';
+                fileList.appendChild(noResultsMsg);
+            }
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+
+    // Form validation and loading state
+    document.getElementById('shareForm')?.addEventListener('submit', function (e) {
+        if (!selectedFileId) {
+            e.preventDefault();
+            alert('Please select a file to share');
+            return;
+        }
+
+        // Show loading overlay
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+
+        // Animate security steps
+        const steps = ['step1', 'step2', 'step3', 'step4'];
+        steps.forEach((stepId, index) => {
+            setTimeout(() => {
+                document.getElementById(stepId).classList.add('visible');
+            }, index * 800);
+        });
+
+        // The form will continue to submit naturally
+    });
+</script>
+
 {% endblock %}
