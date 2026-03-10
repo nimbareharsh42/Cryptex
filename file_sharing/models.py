@@ -4,7 +4,6 @@ from django.utils import timezone
 from cryptography.fernet import Fernet
 import base64
 import os
-from cloudinary.models import CloudinaryField
 
 class SharedFile(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -45,7 +44,7 @@ class AccessLog(models.Model):
         ('UPLOAD', 'Upload'),
         ('DOWNLOAD', 'Download'),
         ('SHARE', 'Share'),
-        ('DELETE', 'Delete'),   # ✅ FIXED
+        ('DELETE', 'Delete'), 
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -67,9 +66,32 @@ class Feedback(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
-
 class UploadedFile(models.Model):
-    title = models.CharField(max_length=100)
-    file = CloudinaryField('file')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file_name = models.CharField(max_length=255)
+    file_url = models.URLField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    download_count = models.IntegerField(default=0)
+    file_size = models.IntegerField(null=True)
+
+    class Meta:
+        verbose_name = "Uploaded File"
+        verbose_name_plural = "Uploaded Files"
+    
+    def __str__(self):
+        return f"{self.file_name} - {self.user.username}"
+
+
+class SharedFileRecord(models.Model):
+    file = models.ForeignKey(UploadedFile, on_delete=models.CASCADE)
+    shared_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='files_shared_by_user')
+    shared_with_email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)    
+    
+    class Meta:
+        unique_together = ('file', 'shared_with_email')
+        verbose_name = "Shared File Record"
+        verbose_name_plural = "Shared File Records"
+    
+    def __str__(self):
+        return f"{self.file.file_name} shared with {self.shared_with_email}"

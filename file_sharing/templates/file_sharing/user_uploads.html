@@ -60,6 +60,7 @@
         margin-bottom: 0.5rem;
         background: linear-gradient(to right, #fff, #c7d2fe);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         display: inline-block;
     }
@@ -324,11 +325,18 @@
             <div class="file-card">
                 <div class="card-top">
                     <div class="file-icon">
-                        {% if file.original_filename|lower|slice:"-4" == ".pdf" %}
+                        {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
                         <i class="fas fa-file-pdf"></i>
-                        {% elif file.original_filename|lower|slice:"-4" == ".jpg" or
-                        file.original_filename|lower|slice:"-4" == ".png" %}
+
+                        {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or file.original_filename|lower|slice:"-5:" == ".jpeg" or file.original_filename|lower|slice:"-4:" == ".png" %}
                         <i class="fas fa-file-image"></i>
+
+                        {% elif file.original_filename|lower|slice:"-4:" == ".doc" or file.original_filename|lower|slice:"-5:" == ".docx" %}
+                        <i class="fas fa-file-word"></i>
+
+                        {% elif file.original_filename|lower|slice:"-4:" == ".xls" or file.original_filename|lower|slice:"-5:" == ".xlsx" %}
+                        <i class="fas fa-file-excel"></i>
+
                         {% else %}
                         <i class="fas fa-file-alt"></i>
                         {% endif %}
@@ -388,11 +396,11 @@
                             <div class="d-flex gap-2 justify-content-center">
                                 <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
                                 <form method="post" action="{% url 'file_sharing:delete' file.id %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger px-4">
-        <i class="fas fa-trash me-2"></i>Delete
-    </button>
-</form>
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger px-4">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
 
                             </div>
                         </div>

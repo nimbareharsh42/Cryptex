@@ -3,7 +3,6 @@
 {% block title %}Share Files - Cryptex{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -14,6 +13,26 @@
         min-height: calc(100vh - 200px);
         padding: 2rem 0;
         position: relative;
+    }
+
+    /* Global rule: allow pseudo-elements for icons */
+    /* .share-page *::before,
+    .share-page *::after {
+        content: inherit;
+    } */
+     .share-page::before,
+.header-overlay::before,
+.ring-outer::before,
+.ring-inner::before {
+    content: '' !important;
+}
+
+    /* Allow specific pseudo-elements that need content */
+    .share-page::before,
+    .header-overlay::before,
+    .ring-outer::before,
+    .ring-inner::before {
+        content: '' !important;
     }
 
     .share-page::before {
@@ -27,6 +46,7 @@
             radial-gradient(circle at 20% 30%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
         pointer-events: none;
+        z-index: 0;
     }
 
     @media (min-width: 768px) {
@@ -41,6 +61,7 @@
         padding: 0 1.5rem;
         position: relative;
         z-index: 1;
+        isolation: isolate;
     }
 
     /* Page Header */
@@ -65,6 +86,7 @@
             radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 40%),
             radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
         pointer-events: none;
+        z-index: 1;
     }
 
     .header-content {
@@ -83,6 +105,10 @@
         font-size: 3rem;
         margin-bottom: 1.5rem;
         backdrop-filter: blur(10px);
+    }
+
+    .page-icon i {
+        color: white !important;
     }
 
     .page-title {
@@ -107,12 +133,23 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 2.5rem;
+        position: relative;
+        z-index: 1;
     }
 
     @media (min-width: 992px) {
         .share-form-grid {
             grid-template-columns: 1.2fr 1fr;
         }
+    }
+
+    /* Section containers */
+    .file-selection-section,
+    .recipient-section {
+        position: relative;
+        z-index: 2;
+        isolation: isolate;
+        overflow: visible;
     }
 
     /* Share Card */
@@ -123,6 +160,10 @@
         padding: 2.5rem;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        z-index: 2;
+        isolation: isolate;
+        overflow: visible;
     }
 
     .section-title {
@@ -133,6 +174,9 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        position: relative;
+        z-index: 3;
+        overflow: hidden;
     }
 
     .section-icon {
@@ -143,13 +187,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: white !important;
+        flex-shrink: 0;
+    }
+
+    .section-icon i {
+        color: white !important;
+        font-style: normal;
+    }
+
+    .section-title span {
+        position: relative;
+        z-index: 4;
+        background: transparent;
     }
 
     /* File Selection */
     .file-search-box {
         position: relative;
         margin-bottom: 1rem;
+        z-index: 6;
     }
 
     .file-search-box .search-icon {
@@ -157,8 +214,13 @@
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #6c757d;
-        z-index: 1;
+        color: #6c757d !important;
+        z-index: 7;
+        pointer-events: none;
+    }
+
+    .file-search-box .search-icon i {
+        color: #6c757d !important;
     }
 
     .file-search-input {
@@ -169,6 +231,9 @@
         transition: all 0.3s ease;
         font-size: 0.95rem;
         font-weight: 500;
+        position: relative;
+        z-index: 6;
+        background: white;
     }
 
     .file-search-input:focus {
@@ -180,11 +245,15 @@
     .custom-file-list {
         max-height: 350px;
         overflow-y: auto;
+        overflow-x: hidden;
         border: 2px solid #e9ecef;
         border-radius: 12px;
         padding: 0.5rem;
         background: #fafbfc;
         margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 5;
+        isolation: isolate;
     }
 
     .custom-file-list::-webkit-scrollbar {
@@ -212,6 +281,10 @@
         margin-bottom: 0.5rem;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 10;
+        isolation: isolate;
+        overflow: hidden;
     }
 
     .file-list-item:hover {
@@ -238,10 +311,21 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: white !important;
         font-size: 1.5rem;
         flex-shrink: 0;
         transition: all 0.3s ease;
+        position: relative;
+        z-index: 11;
+    }
+
+    .file-item-icon i {
+        color: white !important;
+        display: inline-block !important;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
     }
 
     .file-list-item:hover .file-item-icon {
@@ -251,30 +335,62 @@
     .file-item-info {
         flex: 1;
         min-width: 0;
+        position: relative;
+        z-index: 11;
+        background: transparent;
+        padding: 0;
+        overflow: hidden;
     }
 
     .file-item-name {
         font-weight: 700;
-        color: #1a2332;
+        color: #1a2332 !important;
         margin-bottom: 0.25rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        position: relative;
+        z-index: 11;
+        background: transparent;
+        pointer-events: auto;
+        line-height: 1.4;
+        display: block;
     }
 
     .file-item-meta {
         font-size: 0.85rem;
-        color: #6c757d;
+        color: #6c757d !important;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        position: relative;
+        z-index: 11;
+        background: transparent;
+        line-height: 1.4;
+    }
+
+    .file-item-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .file-item-meta i {
+        color: #6c757d !important;
     }
 
     .file-item-check {
-        color: #4f46e5;
+        color: #4f46e5 !important;
         font-size: 1.75rem;
         opacity: 0;
         transition: all 0.3s ease;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 11;
+    }
+
+    .file-item-check i {
+        color: #4f46e5 !important;
     }
 
     .file-list-item.selected .file-item-check {
@@ -285,6 +401,8 @@
     /* Recipient Input */
     .form-group {
         margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 3;
     }
 
     .form-label {
@@ -293,10 +411,13 @@
         margin-bottom: 0.75rem;
         display: block;
         font-size: 1rem;
+        position: relative;
+        z-index: 4;
     }
 
     .input-wrapper {
         position: relative;
+        z-index: 3;
     }
 
     .input-icon {
@@ -304,8 +425,14 @@
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #6c757d;
+        color: #6c757d !important;
         font-size: 1.1rem;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .input-icon i {
+        color: #6c757d !important;
     }
 
     .form-control {
@@ -316,6 +443,9 @@
         font-size: 0.95rem;
         font-weight: 500;
         transition: all 0.3s ease;
+        position: relative;
+        z-index: 3;
+        background: white;
     }
 
     .form-control:focus {
@@ -355,6 +485,30 @@
         transform: none;
     }
 
+    /* Permission Items */
+    .permission-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .permission-item:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+
     .btn-cancel {
         display: block;
         text-align: center;
@@ -377,8 +531,12 @@
 
     .empty-icon {
         font-size: 4rem;
-        color: #cbd5e1;
+        color: #cbd5e1 !important;
         margin-bottom: 1rem;
+    }
+
+    .empty-icon i {
+        color: #cbd5e1 !important;
     }
 
     @media (max-width: 768px) {
@@ -456,8 +614,12 @@
         left: 50%;
         transform: translate(-50%, -50%);
         font-size: 2rem;
-        color: #fff;
+        color: #fff !important;
         animation: pulse 2s ease-in-out infinite;
+    }
+
+    .shield-icon i {
+        color: #fff !important;
     }
 
     .security-status-title {
@@ -496,7 +658,8 @@
     }
 
     .security-step i {
-        color: #10b981;
+        color: #10b981 !important;
+        display: inline-block !important;
     }
 
     @keyframes spin {
@@ -523,6 +686,46 @@
             transform: translate(-50%, -50%) scale(1.1);
             opacity: 0.8;
         }
+    }
+
+    /* CRITICAL: Prevent text overlay issues */
+    * {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    /* Force all text to stay within bounds
+    .file-list-item,
+    .file-item-name,
+    .file-item-meta,
+    .file-item-info {
+        contain: layout;
+    } */
+
+    /* Ensure Font Awesome icons display */
+    .fas,
+    .far,
+    .fa {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900;
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .far {
+        font-weight: 400 !important;
+    }
+
+    /* Fix icon visibility */
+    i[class*="fa-"] {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 </style>
 
@@ -570,8 +773,7 @@
                 <div>
                     <h1 class="page-title">Share Files Securely</h1>
                     <p class="page-description">
-                        Select a file from your vault and share it with another user. All files remain encrypted
-                        end-to-end.
+                        Select multiple files from your vault and share them with another user. Set permissions and expiration dates for secure access control. All files remain encrypted end-to-end.
                     </p>
                 </div>
                 <div class="d-none d-md-block">
@@ -597,7 +799,7 @@
                             <div class="section-icon">
                                 <i class="fas fa-folder-open"></i>
                             </div>
-                            <span>Select File to Share</span>
+                            <span>Select Files to Share (Multiple)</span>
                         </div>
 
                         <!-- Search Box -->
@@ -613,29 +815,27 @@
                             <div class="file-list-item" data-file-id="{{ file.id }}"
                                 data-filename="{{ file.original_filename|lower }}" onclick="selectFile(this)">
                                 <div class="file-item-icon">
-                                    {% if file.original_filename|lower|slice:"-4:" == ".pdf" %}
-                                    <i class="fas fa-file-pdf"></i>
-                                    {% elif file.original_filename|lower|slice:"-4:" == ".jpg" or
-                                    file.original_filename|lower|slice:"-5:" == ".jpeg" or
-                                    file.original_filename|lower|slice:"-4:" == ".png" %}
-                                    <i class="fas fa-file-image"></i>
-                                    {% elif file.original_filename|lower|slice:"-4:" == ".doc" or
-                                    file.original_filename|lower|slice:"-5:" == ".docx" %}
-                                    <i class="fas fa-file-word"></i>
-                                    {% elif file.original_filename|lower|slice:"-4:" == ".xls" or
-                                    file.original_filename|lower|slice:"-5:" == ".xlsx" %}
-                                    <i class="fas fa-file-excel"></i>
-                                    {% else %}
-                                    <i class="fas fa-file-alt"></i>
-                                    {% endif %}
+                                    {% with name=file.original_filename|lower %}
+                                        {% if name|slice:"-4:" == ".pdf" %}
+                                            <i class="fas fa-file-pdf"></i>
+                                        {% elif name|slice:"-5:" == ".docx" or name|slice:"-4:" == ".doc" %}
+                                            <i class="fas fa-file-word"></i>
+                                        {% elif name|slice:"-4:" == ".ppt" or name|slice:"-5:" == ".pptx" %}
+                                            <i class="fas fa-file-powerpoint"></i>
+                                        {% elif name|slice:"-4:" == ".jpg" or name|slice:"-5:" == ".jpeg" or name|slice:"-4:" == ".png" %}
+                                            <i class="fas fa-file-image"></i>
+                                        {% else %}
+                                            <i class="fas fa-file-alt"></i>
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
                                 <div class="file-item-info">
-                                    <div class="file-item-name" title="{{ file.original_filename }}">
+                                    <div class="file-item-name">
                                         {{ file.original_filename }}
                                     </div>
                                     <div class="file-item-meta">
                                         <span><i class="fas fa-lock me-1"></i>Encrypted</span>
-                                        <span><i class="far fa-calendar me-1"></i>{{ file.upload_date|date:"M d, Y" }}</span>
+                                        <span><i class="far fa-calendar me-1"></i>{{ file.upload_date|date:"M d, Y"}}</span>
                                     </div>
                                 </div>
                                 <div class="file-item-check">
@@ -644,7 +844,8 @@
                             </div>
                             {% endfor %}
                         </div>
-                        <input type="hidden" name="file_id" id="selectedFileId" required>
+                        <!-- Hidden container for selected file IDs -->
+                        <div id="selectedFilesContainer"></div>
                     </div>
 
                     <!-- Right Column: Recipient & Actions -->
@@ -666,6 +867,44 @@
                             <small class="text-muted mt-2 d-block">
                                 <i class="fas fa-info-circle me-1"></i>The recipient must have an account to receive the
                                 file
+                            </small>
+                        </div>
+
+                        <!-- Permissions Section -->
+                        <div class="form-group">
+                            <label class="form-label mb-3">Permissions</label>
+                            
+                            <div class="permission-item">
+                                <div>
+                                    <div class="fw-bold text-dark">Allow Download</div>
+                                    <small class="text-muted">Recipient can download the decrypted file</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="can_download" name="can_download" checked>
+                                </div>
+                            </div>
+
+                            <div class="permission-item">
+                                <div>
+                                    <div class="fw-bold text-dark">Allow Re-sharing</div>
+                                    <small class="text-muted">Recipient can share this file with others</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="can_share" name="can_share">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expiration Date -->
+                        <div class="form-group">
+                            <label class="form-label">Share Expiration</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-clock input-icon"></i>
+                                <input type="number" name="expiration_days" class="form-control"
+                                    placeholder="Days until expiration" min="1" max="365" value="10">
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Default: 10 days. Leave empty for no expiration.
                             </small>
                         </div>
 
@@ -701,25 +940,57 @@
 </div>
 
 <script>
-    let selectedFileId = null;
+    let selectedFileIds = new Set();
 
     function selectFile(element) {
-        // Remove selection from all items
-        document.querySelectorAll('.file-list-item').forEach(item => {
-            item.classList.remove('selected');
+        const fileId = element.getAttribute('data-file-id');
+        
+        // Toggle selection
+        if (element.classList.contains('selected')) {
+            // Deselect the file
+            element.classList.remove('selected');
+            selectedFileIds.delete(fileId);
+        } else {
+            // Select the file
+            element.classList.add('selected');
+            selectedFileIds.add(fileId);
+        }
+        
+        // Update hidden inputs for selected files
+        updateSelectedFilesInputs();
+        
+        // Update share button state and text
+        updateShareButton();
+    }
+
+    function updateSelectedFilesInputs() {
+        const container = document.getElementById('selectedFilesContainer');
+        container.innerHTML = '';
+        
+        selectedFileIds.forEach(fileId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'file_ids';
+            input.value = fileId;
+            container.appendChild(input);
         });
+    }
 
-        // Add selection to clicked item
-        element.classList.add('selected');
-        selectedFileId = element.getAttribute('data-file-id');
-
-        // Update hidden input
-        document.getElementById('selectedFileId').value = selectedFileId;
-
-        // Enable share button
+    function updateShareButton() {
         const shareButton = document.getElementById('shareButton');
-        if (shareButton) {
+        if (!shareButton) return;
+        
+        const count = selectedFileIds.size;
+        
+        if (count === 0) {
+            shareButton.disabled = true;
+            shareButton.innerHTML = '<i class="fas fa-paper-plane"></i> Share File';
+        } else if (count === 1) {
             shareButton.disabled = false;
+            shareButton.innerHTML = '<i class="fas fa-paper-plane"></i> Share File';
+        } else {
+            shareButton.disabled = false;
+            shareButton.innerHTML = `<i class="fas fa-paper-plane"></i> Share ${count} Files`;
         }
     }
 
@@ -736,16 +1007,6 @@
                 visibleCount++;
             } else {
                 item.classList.add('hidden');
-                // Deselect if hidden
-                if (item.classList.contains('selected')) {
-                    item.classList.remove('selected');
-                    selectedFileId = null;
-                    document.getElementById('selectedFileId').value = '';
-                    const shareButton = document.getElementById('shareButton');
-                    if (shareButton) {
-                        shareButton.disabled = true;
-                    }
-                }
             }
         });
 
@@ -768,9 +1029,9 @@
 
     // Form validation and loading state
     document.getElementById('shareForm')?.addEventListener('submit', function (e) {
-        if (!selectedFileId) {
+        if (selectedFileIds.size === 0) {
             e.preventDefault();
-            alert('Please select a file to share');
+            alert('Please select at least one file to share');
             return;
         }
 
@@ -782,12 +1043,16 @@
         const steps = ['step1', 'step2', 'step3', 'step4'];
         steps.forEach((stepId, index) => {
             setTimeout(() => {
-                document.getElementById(stepId).classList.add('visible');
+                const stepElement = document.getElementById(stepId);
+                if (stepElement) {
+                    stepElement.classList.add('visible');
+                }
             }, index * 800);
         });
 
         // The form will continue to submit naturally
     });
+</script>
 </script>
 
 {% endblock %}

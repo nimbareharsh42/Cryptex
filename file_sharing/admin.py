@@ -3,7 +3,14 @@ from .models import SharedFile, FileShare, AccessLog, UserKey
 
 @admin.register(SharedFile)
 class SharedFileAdmin(admin.ModelAdmin):
-    list_display = ('original_filename', 'owner', 'upload_date', 'expiration_date', 'download_count')
+    list_display = (
+    'original_filename',
+    'encrypted_filename',
+    'owner',
+    'upload_date',
+    'expiration_date',
+    'download_count'
+    )
     list_filter = ('upload_date', 'owner')
     search_fields = ('original_filename', 'owner__username')
 

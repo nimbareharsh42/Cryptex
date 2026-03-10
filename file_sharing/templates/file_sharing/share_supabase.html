@@ -1,0 +1,355 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}Share File - Cryptex{% endblock %}
+
+{% block content %}
+<style>
+    .share-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        padding: 2rem;
+    }
+
+    .share-card {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .share-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .share-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .share-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .share-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23334155' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 12px;
+        padding-right: 3rem;
+    }
+
+    .share-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .share-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .history-section {
+        margin-top: 3rem;
+    }
+
+    .history-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+    }
+
+    .history-list {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .history-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s ease;
+    }
+
+    .history-item:last-child {
+        border-bottom: none;
+    }
+
+    .history-item:hover {
+        background: #f8fafc;
+    }
+
+    .history-info {
+        flex: 1;
+    }
+
+    .history-filename {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .history-email {
+        color: #10b981;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .history-date {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .history-badge {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .messages {
+        margin-bottom: 1.5rem;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        border: 1px solid #10b981;
+        color: #065f46;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        border: 1px solid #ef4444;
+        color: #991b1b;
+    }
+
+    .alert-info {
+        background: #dbeafe;
+        border: 1px solid #3b82f6;
+        color: #1e40af;
+    }
+
+    .no-files-message {
+        background: #fef3c7;
+        border: 1px solid #fbbf24;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .no-files-message p {
+        color: #92400e;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .no-files-message a {
+        color: #7c2d12;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+</style>
+
+<div class="share-container">
+    <div class="share-card">
+        <div class="share-header">
+            <div class="share-icon">
+                🔗
+            </div>
+            <h1 class="share-title">Share File</h1>
+            <p class="share-subtitle">Share your uploaded files with others</p>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if user_files %}
+        <form method="POST" id="shareForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="file_id">Select File to Share</label>
+                <select name="file_id" id="file_id" class="form-control" required>
+                    <option value="">-- Choose a file --</option>
+                    {% for file in user_files %}
+                    <option value="{{ file.id }}">
+                        {{ file.file_name }} (Uploaded: {{ file.uploaded_at|date:"M d, Y" }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="recipient_email">Recipient Email</label>
+                <input 
+                    type="email" 
+                    name="recipient_email" 
+                    id="recipient_email" 
+                    class="form-control" 
+                    placeholder="Enter email address"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="share-btn" id="shareBtn">
+                Share File
+            </button>
+        </form>
+        {% else %}
+        <div class="no-files-message">
+            <p>📁 You don't have any uploaded files yet. <a href="{% url 'file_sharing:upload_supabase' %}">Upload a file</a> to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sharing History -->
+    {% if shared_files %}
+    <div class="history-section">
+        <h2 class="history-title">📋 Sharing History</h2>
+        <div class="history-list">
+            {% for share in shared_files %}
+            <div class="history-item">
+                <div class="history-info">
+                    <div class="history-filename">📄 {{ share.file.file_name }}</div>
+                    <div class="history-email">📧 {{ share.shared_with_email }}</div>
+                    <div class="history-date">🕒 {{ share.created_at|date:"F d, Y - g:i A" }}</div>
+                </div>
+                <div class="history-badge">✓ Shared</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>No sharing history yet</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const shareForm = document.getElementById('shareForm');
+    const shareBtn = document.getElementById('shareBtn');
+
+    if (shareForm) {
+        shareForm.addEventListener('submit', (e) => {
+            const fileId = document.getElementById('file_id').value;
+            const email = document.getElementById('recipient_email').value;
+
+            if (!fileId || !email) {
+                e.preventDefault();
+                alert('Please select a file and enter recipient email!');
+                return;
+            }
+
+            shareBtn.disabled = true;
+            shareBtn.textContent = 'Sharing...';
+        });
+    }
+
+    // Email validation
+    const emailInput = document.getElementById('recipient_email');
+    if (emailInput) {
+        emailInput.addEventListener('input', (e) => {
+            const email = e.target.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email && !emailRegex.test(email)) {
+                e.target.style.borderColor = '#ef4444';
+            } else {
+                e.target.style.borderColor = '#e2e8f0';
+            }
+        });
+    }
+</script>
+{% endblock %}

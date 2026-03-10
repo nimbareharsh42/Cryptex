@@ -226,6 +226,20 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Share Expiration</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"
+                        style="border-radius: 12px 0 0 12px; border: 2px solid #e2e8f0; border-right: none;">
+                        <i class="fas fa-clock text-muted"></i>
+                    </span>
+                    <input type="number" class="form-control border-start-0" id="expiration_days" name="expiration_days"
+                        placeholder="Days until expiration" min="1" max="365" value="10"
+                        style="border-radius: 0 12px 12px 0;">
+                </div>
+                <small class="text-muted d-block mt-1">Default: 10 days. Leave empty for no expiration.</small>
+            </div>
+
             <button type="submit" class="btn-share">
                 <i class="fas fa-paper-plane"></i> Share Securely
             </button>

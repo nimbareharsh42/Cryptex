@@ -376,17 +376,24 @@
     /* Enhanced Table */
     .files-table {
         margin: 0;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .files-table thead {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
     }
 
     .files-table thead th {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+        background-color: transparent !important;
         border: none;
         padding: 1.25rem 2rem;
         font-weight: 700;
-        color: #495057;
-        font-size: 0.875rem;
+        color: #6c757d;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
     }
 
     .files-table tbody td {
@@ -579,12 +586,12 @@
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     Upload New File
                                 </a>
-                               <a href="{% url 'file_sharing:share_page' %}" class="hero-btn-primary">
+                                <a href="{% url 'file_sharing:share_page' %}" class="hero-btn-primary">
                                     <i class="fas fa-share me-2"></i>Share File
                                 </a>
                                 <a href="{% url 'file_sharing:user_uploads' %}" class="hero-btn-secondary">
                                     <i class="fas fa-folder-open"></i>
-                                    View All Files
+                                    View All Uploaded Files
                                 </a>
                             </div>
 
@@ -654,7 +661,119 @@
                     </div>
                 </div>
 
-                
+                <!-- Files Management Section -->
+                <div class="row g-4 mb-4">
+                    <!-- My Uploaded Files -->
+                    <div class="col-12">
+                        <div class="files-card">
+                            <div class="files-header">
+                                <h5><i class="fas fa-file-upload me-2 text-primary"></i>My Uploads</h5>
+                                <span class="badge-count">{{ user_files.count }} Files</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table files-table">
+                                    <thead>
+                                        <tr>
+                                            <th>File Name</th>
+                                            <th>Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for file in user_files|slice:":5" %}
+                                        <tr>
+                                            <td>
+                                                <div class="file-name text-truncate" style="max-width: 400px;">
+                                                    {{ file.original_filename }}
+                                                </div>
+                                                <div class="file-encrypted">AES-256 Protected</div>
+                                            </td>
+                                            <td>{{ file.upload_date|date:"M d" }}</td>
+                                            <td>
+                                                <a href="{% url 'file_sharing:download' file.id %}"
+                                                    class="btn-action success">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4 text-muted">No files uploaded yet
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if user_files.count > 5 %}
+                            <div class="p-3 text-center border-top">
+                                <a href="{% url 'file_sharing:user_uploads' %}"
+                                    class="text-primary fw-bold text-decoration-none small">
+                                    View All Uploads <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Files Shared with Me -->
+                    <div class="col-12">
+                        <div class="files-card">
+                            <div class="files-header">
+                                <h5><i class="fas fa-share-alt me-2 text-info"></i>Shared with Me</h5>
+                                <span class="badge-count">{{ received_files.count }} Files</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table files-table">
+                                    <thead>
+                                        <tr>
+                                            <th>File Name</th>
+                                            <th>From</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for share in received_files|slice:":5" %}
+                                        <tr>
+                                            <td>
+                                                <div class="file-name text-truncate" style="max-width: 400px;">
+                                                    {{ share.shared_file.original_filename }}
+                                                </div>
+                                                <div class="file-encrypted">{{ share.shared_file.upload_date|date:"M d"
+                                                    }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark rounded-pill">
+                                                    {{ share.shared_file.owner.username }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'file_sharing:download' share.shared_file.id %}"
+                                                    class="btn-action primary">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4 text-muted">No files shared with you
+                                                yet</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if received_files.count > 5 %}
+                            <div class="p-3 text-center border-top">
+                                <a href="{% url 'file_sharing:share_history' %}"
+                                    class="text-primary fw-bold text-decoration-none small">
+                                    View All Shared Files <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -891,6 +1010,7 @@
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -908,7 +1028,6 @@
     .alert-warning {
         border-left-color: #f59e0b !important;
     }
-
 </style>
 
 <script>

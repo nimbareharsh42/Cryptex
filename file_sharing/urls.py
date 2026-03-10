@@ -23,5 +23,9 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('my-uploads/', views.user_uploads, name='user_uploads'),
     path('feedback/', views.feedback, name='feedback'),
+    
+    # Supabase Storage routes
+    path('upload-supabase/', views.upload_file_supabase, name='upload_supabase'),
+    path('share-supabase/', views.share_file_supabase, name='share_supabase'),
 
 ]
