@@ -8,6 +8,7 @@ from .models import SharedFile, FileShare, AccessLog, UserKey, UploadedFile, Sha
 from .utils import encrypt_file, decrypt_file, generate_key_pair, encrypt_with_public_key, decrypt_with_private_key, get_client_ip
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.urls import reverse
 import os
 from django.conf import settings
 from django.db import IntegrityError
@@ -15,6 +16,8 @@ from .models import Feedback
 from utils.supabase_client import supabase
 from .forms import CustomUserCreationForm
 import uuid
+from io import BytesIO
+from urllib.parse import urlencode
 
 def homepage(request):
     """Homepage for non-authenticated users"""
@@ -82,21 +85,27 @@ def upload_file(request):
             # Generate encryption key
             encryption_key = os.urandom(32)
             
-            # Encrypt the file
+            # Encrypt file
             encrypted_filename, encrypted_data = encrypt_file(uploaded_file, encryption_key)
-            encrypted_filename = f"{uuid.uuid4().hex}_{encrypted_filename}"
-            
-            # Save encrypted file to disk
-            file_path = os.path.join(settings.MEDIA_ROOT, 'encrypted_files', encrypted_filename)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+            # Generate storage path
+            storage_path = f"user_{request.user.id}/{uuid.uuid4().hex}_{encrypted_filename}"
+
+            print("Uploading to Supabase:", storage_path)
+
+            # Upload to Supabase
             try:
-                with open(file_path, 'wb') as f:
-                    f.write(encrypted_data)
-            except Exception:
-                return HttpResponse("File storage failed", status=500)
+                supabase.storage.from_("encrypted-files").upload(
+                    storage_path,
+                    encrypted_data,
+                    {"content-type": "application/octet-stream"}
+                )
+            except Exception as e:
+                print("Supabase upload error:", str(e))
+                import traceback
+                traceback.print_exc()
+                return HttpResponse(f"File storage failed: {str(e)}", status=500)
 
-
-            
             # Encrypt the encryption key with user's public key
             user_key = UserKey.objects.get(user=request.user)
             encrypted_key = encrypt_with_public_key(encryption_key, user_key.public_key)
@@ -105,7 +114,7 @@ def upload_file(request):
             shared_file = SharedFile(
                 owner=request.user,
                 original_filename=uploaded_file.name,
-                encrypted_filename=encrypted_filename,
+                encrypted_filename=storage_path,
                 encryption_key=encrypted_key
             )
             shared_file.save()
@@ -189,19 +198,19 @@ def download_file(request, file_id):
                 )
         
         # Read encrypted file from disk
-        file_path = os.path.join(settings.MEDIA_ROOT, 'encrypted_files', shared_file.encrypted_filename)
-        if not os.path.exists(file_path):
-            return HttpResponse("File not found", status=404)
-            
-        with open(file_path, 'rb') as f:
-            encrypted_data = f.read()
+        print("Downloading from Supabase:", shared_file.encrypted_filename)
+        file_path = shared_file.encrypted_filename
+
+        response = supabase.storage.from_("encrypted-files").download(file_path)
+
+        encrypted_data = response
         
         # Decrypt the file
         decrypted_data = decrypt_file(encrypted_data, encryption_key)
         
         # Update download count
-        if shared_file.download_count >= 1:
-            return HttpResponse("This file has already been downloaded.", status=403)
+        
+        shared_file.download_count += 1
         shared_file.save()
         
         # Log the download
@@ -231,81 +240,9 @@ def download_file(request, file_id):
 def share_file(request, file_id):
     shared_file = get_object_or_404(SharedFile, id=file_id, owner=request.user)
 
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        can_download = request.POST.get('can_download') == 'on'
-        can_share = request.POST.get('can_share') == 'on'
-        expiration_days = request.POST.get('expiration_days', '10')
-
-        if not username:
-            return HttpResponse("Username is required", status=400)
-
-        # Calculate expiration date
-        expiration_date = None
-        if expiration_days:
-            try:
-                days = int(expiration_days)
-                if days > 0:
-                    from datetime import timedelta
-                    expiration_date = timezone.now() + timedelta(days=days)
-            except ValueError:
-                pass  # Invalid input, use None
-
-        try:
-            user_to_share_with = User.objects.get(username=username)
-
-            # Check if not sharing with yourself
-            if user_to_share_with == request.user:
-                return HttpResponse("You cannot share a file with yourself", status=400)
-
-            # Validate if the file is already shared
-            if FileShare.objects.filter(shared_file=shared_file, shared_with=user_to_share_with).exists():
-                return HttpResponse("File is already shared with this user", status=400)
-
-            # Get the receiver's public key
-            receiver_key = UserKey.objects.get(user=user_to_share_with)
-
-            # Decrypt the original encryption key using owner's private key
-            owner_key = UserKey.objects.get(user=request.user)
-            original_encryption_key = decrypt_with_private_key(
-                bytes(shared_file.encryption_key),
-                owner_key.private_key_encrypted,
-                password=None
-            )
-
-            # Re-encrypt the encryption key with receiver's public key
-            re_encrypted_key = encrypt_with_public_key(
-                original_encryption_key,
-                receiver_key.public_key
-            )
-
-            # Create share record
-            FileShare.objects.create(
-                shared_file=shared_file,
-                shared_with=user_to_share_with,
-                can_download=can_download,
-                can_share=can_share,
-                expiration_date=expiration_date,
-                encrypted_key=re_encrypted_key
-            )
-
-            # Log the share action
-            AccessLog.objects.create(
-                user=request.user,
-                file=shared_file,
-                access_type='SHARE',
-                ip_address=get_client_ip(request),
-                details=f'Shared file with {username}'
-            )
-
-            return redirect('file_sharing:dashboard')
-
-        except User.DoesNotExist:
-            return HttpResponse("User not found", status=404)
-        except UserKey.DoesNotExist:
-            return HttpResponse("User does not have encryption keys", status=400)
-
-    return render(request, 'file_sharing/share.html', {'file': shared_file})
+    share_page_url = reverse('file_sharing:share_page')
+    query_string = urlencode([('selected', shared_file.id)])
+    return redirect(f'{share_page_url}?{query_string}')
 
 
 @login_required
@@ -333,7 +270,7 @@ def delete_file(request, file_id):
         )
 
         if os.path.exists(file_path):
-            os.remove(file_path)
+            supabase.storage.from_("encrypted-files").remove([file.encrypted_filename])
 
         # log delete action
         AccessLog.objects.create(
@@ -429,7 +366,19 @@ def login_view(request):
 
 @login_required
 def share_page(request):
-    user_files = SharedFile.objects.filter(owner=request.user)
+    user_files = SharedFile.objects.filter(owner=request.user).order_by('-upload_date')
+    requested_selected_file_ids = request.GET.getlist('selected')
+    preselected_file_ids = [
+        str(file_id)
+        for file_id in user_files.filter(id__in=requested_selected_file_ids).values_list('id', flat=True)
+    ]
+
+    def build_share_page_url(selected_ids=None):
+        share_page_url = reverse('file_sharing:share_page')
+        normalized_selected_ids = [str(file_id) for file_id in (selected_ids or []) if str(file_id).strip()]
+        if not normalized_selected_ids:
+            return share_page_url
+        return f"{share_page_url}?{urlencode([('selected', file_id) for file_id in normalized_selected_ids])}"
 
     if request.method == 'POST':
         file_ids = request.POST.getlist('file_ids')  # Get multiple file IDs
@@ -440,11 +389,11 @@ def share_page(request):
 
         if not file_ids:
             messages.error(request, "Please select at least one file to share")
-            return redirect('file_sharing:share_page')
+            return redirect(build_share_page_url())
 
         if not username:
             messages.error(request, "Please enter a recipient username")
-            return redirect('file_sharing:share_page')
+            return redirect(build_share_page_url(file_ids))
 
         # Calculate expiration date
         expiration_date = None
@@ -463,7 +412,7 @@ def share_page(request):
             # Check if not sharing with yourself
             if recipient == request.user:
                 messages.error(request, "You cannot share files with yourself")
-                return redirect('file_sharing:share_page')
+                return redirect(build_share_page_url(file_ids))
 
             # Process each selected file
             shared_count = 0
@@ -539,10 +488,11 @@ def share_page(request):
         except Exception as e:
             messages.error(request, f"Error sharing files: {str(e)}")
 
-        return redirect('file_sharing:share_page')
+        return redirect(build_share_page_url(file_ids))
 
     return render(request, 'file_sharing/share_page.html', {
-        'user_files': user_files
+        'user_files': user_files,
+        'preselected_file_ids': preselected_file_ids,
     })
 
 def submit_feedback(request):

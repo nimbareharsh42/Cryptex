@@ -26,8 +26,8 @@ class FileShare(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     encrypted_key = models.BinaryField(null=True, blank=True)  # Make it nullable first
     
-    class Meta:
-        unique_together = ('shared_file', 'shared_with')
+    # class Meta:
+    #     unique_together = ('shared_file', 'shared_with')
     
     def __str__(self):
         return f"{self.shared_file.original_filename} shared with {self.shared_with.username}"

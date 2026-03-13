@@ -939,8 +939,32 @@
     </div>
 </div>
 
+{{ preselected_file_ids|json_script:"preselected-file-ids" }}
+
 <script>
     let selectedFileIds = new Set();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const preselectedFileIdsElement = document.getElementById('preselected-file-ids');
+        if (!preselectedFileIdsElement) {
+            updateShareButton();
+            return;
+        }
+
+        const preselectedFileIds = JSON.parse(preselectedFileIdsElement.textContent || '[]');
+        preselectedFileIds.forEach(fileId => {
+            const normalizedFileId = String(fileId);
+            const fileElement = document.querySelector(`.file-list-item[data-file-id="${normalizedFileId}"]`);
+
+            if (fileElement) {
+                fileElement.classList.add('selected');
+                selectedFileIds.add(normalizedFileId);
+            }
+        });
+
+        updateSelectedFilesInputs();
+        updateShareButton();
+    });
 
     function selectFile(element) {
         const fileId = element.getAttribute('data-file-id');
@@ -1052,7 +1076,6 @@
 
         // The form will continue to submit naturally
     });
-</script>
 </script>
 
 {% endblock %}

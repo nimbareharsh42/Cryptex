@@ -367,7 +367,7 @@
                 </div>
 
                 <div class="actions-grid">
-                    <a href="{% url 'file_sharing:share' file.id %}" class="action-btn btn-share">
+                    <a href="{% url 'file_sharing:share_page' %}?selected={{ file.id }}" class="action-btn btn-share">
                         <i class="fas fa-share-alt"></i> Share
                     </a>
                     <a href="{% url 'file_sharing:download' file.id %}" class="action-btn btn-download">
