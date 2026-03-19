@@ -727,6 +727,186 @@
         visibility: visible !important;
         opacity: 1 !important;
     }
+
+    /* ===== Share Success Modal ===== */
+    .share-success-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 15, 30, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeInBg 0.3s ease;
+    }
+
+    .share-success-overlay.visible {
+        display: flex;
+    }
+
+    @keyframes fadeInBg {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    .share-success-card {
+        background: #fff;
+        border-radius: 28px;
+        padding: 3rem 2.5rem 2.5rem;
+        max-width: 480px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+        animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes popIn {
+        from { transform: scale(0.7); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .share-success-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #10b981, #4f46e5);
+        background-size: 200%;
+        animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+        0%   { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
+    .success-icon-ring {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: #059669;
+        animation: bounceIn 0.6s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        box-shadow: 0 0 0 10px rgba(16,185,129,0.1), 0 0 0 20px rgba(16,185,129,0.05);
+    }
+
+    @keyframes bounceIn {
+        from { transform: scale(0); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1a2332;
+        margin-bottom: 0.5rem;
+    }
+
+    .success-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 1.75rem;
+        line-height: 1.6;
+    }
+
+    .success-details-box {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .success-detail-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        font-size: 0.95rem;
+        color: #334155;
+    }
+
+    .success-detail-row:not(:last-child) {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .success-detail-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+
+    .success-detail-icon.green  { background: #d1fae5; color: #059669; }
+    .success-detail-icon.indigo { background: #e0e7ff; color: #4f46e5; }
+    .success-detail-icon.purple { background: #f3e8ff; color: #7c3aed; }
+
+    .success-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .btn-success-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.25rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-success-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+
+    .btn-success-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        padding: 0.875rem 1.25rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success-secondary:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        transform: translateY(-2px);
+    }
 </style>
 
 <div class="share-page">
@@ -762,6 +942,52 @@
             <p class="mb-0 text-white-50 small">
                 <i class="fas fa-lock me-1"></i> End-to-End Encryption Active
             </p>
+        </div>
+    </div>
+
+    <!-- Share Success Modal -->
+    <div id="shareSuccessOverlay" class="share-success-overlay">
+        <div class="share-success-card">
+            <div class="success-icon-ring">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="success-title">Shared Successfully!</h2>
+            <p class="success-subtitle" id="successSubtitle">
+                Your file has been securely encrypted and shared.
+            </p>
+
+            <div class="success-details-box">
+                <div class="success-detail-row">
+                    <div class="success-detail-icon indigo"><i class="fas fa-file"></i></div>
+                    <div>
+                        <div style="font-size:0.8rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Files Shared</div>
+                        <div style="font-weight:700;" id="successFileCount">1 file</div>
+                    </div>
+                </div>
+                <div class="success-detail-row">
+                    <div class="success-detail-icon purple"><i class="fas fa-user"></i></div>
+                    <div>
+                        <div style="font-size:0.8rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Recipient</div>
+                        <div style="font-weight:700;" id="successRecipient">username</div>
+                    </div>
+                </div>
+                <div class="success-detail-row">
+                    <div class="success-detail-icon green"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <div style="font-size:0.8rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Security</div>
+                        <div style="font-weight:700;">End-to-End Encrypted · AES-256</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <a href="{% url 'file_sharing:dashboard' %}" class="btn-success-primary">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <button type="button" class="btn-success-secondary" id="shareAnotherBtn">
+                    <i class="fas fa-share-alt"></i> Share More
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1051,30 +1277,113 @@
         }
     }
 
-    // Form validation and loading state
+    // Form validation — AJAX submission with success modal
     document.getElementById('shareForm')?.addEventListener('submit', function (e) {
+        e.preventDefault();
+
         if (selectedFileIds.size === 0) {
-            e.preventDefault();
             alert('Please select at least one file to share');
             return;
         }
 
-        // Show loading overlay
+        const usernameInput = this.querySelector('input[name="username"]');
+        if (!usernameInput || !usernameInput.value.trim()) {
+            alert('Please enter a recipient username');
+            return;
+        }
+
+        const recipientUsername = usernameInput.value.trim();
+
+        // Show loading overlay with animated security steps
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
 
-        // Animate security steps
         const steps = ['step1', 'step2', 'step3', 'step4'];
-        steps.forEach((stepId, index) => {
+        const stepTimers = steps.map((stepId, index) =>
             setTimeout(() => {
-                const stepElement = document.getElementById(stepId);
-                if (stepElement) {
-                    stepElement.classList.add('visible');
+                const el = document.getElementById(stepId);
+                if (el) el.classList.add('visible');
+            }, index * 700)
+        );
+
+        // Submit via AJAX
+        const formData = new FormData(this);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', this.action || window.location.href);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.addEventListener('load', function () {
+            // Hide loading overlay
+            overlay.style.display = 'none';
+            stepTimers.forEach(t => clearTimeout(t));
+            steps.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('visible');
+            });
+
+            let data;
+            try { data = JSON.parse(xhr.responseText); } catch (_) {
+                alert('Unexpected server response. Please try refreshing.');
+                return;
+            }
+
+            if (data.status === 'success') {
+                // Populate success modal fields
+                const fileCount = data.shared_count;
+                document.getElementById('successFileCount').textContent =
+                    fileCount === 1 ? '1 file' : `${fileCount} files`;
+                document.getElementById('successRecipient').textContent = `@${data.recipient}`;
+
+                let subtitle = '';
+                if (fileCount > 0) {
+                    subtitle = fileCount === 1
+                        ? 'Your file has been securely encrypted and shared.'
+                        : `${fileCount} files have been securely encrypted and shared.`;
                 }
-            }, index * 800);
+                if (data.already_shared_count > 0) {
+                    subtitle += (subtitle ? ' ' : '') +
+                        `(${data.already_shared_count} file${data.already_shared_count > 1 ? 's were' : ' was'} already shared with this user.)`;
+                }
+                document.getElementById('successSubtitle').textContent =
+                    subtitle || 'Operation complete.';
+
+                // Show the modal
+                document.getElementById('shareSuccessOverlay').classList.add('visible');
+
+                // Confetti celebration!
+                if (typeof createConfetti === 'function') createConfetti();
+
+            } else {
+                alert(data.message || 'An error occurred while sharing the file(s).');
+            }
         });
 
-        // The form will continue to submit naturally
+        xhr.addEventListener('error', function () {
+            overlay.style.display = 'none';
+            stepTimers.forEach(t => clearTimeout(t));
+            alert('Connection error. Please check your network and try again.');
+        });
+
+        xhr.send(formData);
+    });
+
+    // "Share More" button — reset form and hide success overlay
+    document.getElementById('shareAnotherBtn')?.addEventListener('click', function () {
+        document.getElementById('shareSuccessOverlay').classList.remove('visible');
+
+        // Clear all file selections
+        selectedFileIds.clear();
+        document.querySelectorAll('.file-list-item.selected')
+                 .forEach(el => el.classList.remove('selected'));
+        updateSelectedFilesInputs();
+        updateShareButton();
+
+        // Clear recipient field
+        const usernameInput = document.querySelector('input[name="username"]');
+        if (usernameInput) usernameInput.value = '';
+
+        // Scroll to top of form for convenience
+        document.getElementById('shareForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 </script>
 

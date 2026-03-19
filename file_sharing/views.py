@@ -18,6 +18,8 @@ from .forms import CustomUserCreationForm
 import uuid
 from io import BytesIO
 from urllib.parse import urlencode
+import time
+
 
 def homepage(request):
     """Homepage for non-authenticated users"""
@@ -64,8 +66,8 @@ def upload_file(request):
             uploaded_file = request.FILES['file']
 
             # Limit file size to 50MB
-            if uploaded_file.size > 50 * 1024 * 1024:
-                return HttpResponse("File too large (max 50MB)", status=400)
+            # if uploaded_file.size > 50 * 1024 * 1024:
+            #     return HttpResponse("File too large (max 50MB)", status=400)
             
             allowed_types = [
                 "application/pdf",
@@ -84,27 +86,32 @@ def upload_file(request):
             # Show progress in UI (the actual progress is handled by JavaScript)
             # Generate encryption key
             encryption_key = os.urandom(32)
-            
-            # Encrypt file
-            encrypted_filename, encrypted_data = encrypt_file(uploaded_file, encryption_key)
+
+            # Read file once into memory
+            encrypted_data = uploaded_file.read()
+            encrypted_filename = uploaded_file.name
 
             # Generate storage path
             storage_path = f"user_{request.user.id}/{uuid.uuid4().hex}_{encrypted_filename}"
 
-            print("Uploading to Supabase:", storage_path)
+            # Log size for debugging
+            file_size_mb = uploaded_file.size / (1024 * 1024)
+            print(f"\n[UPLOAD] File: {uploaded_file.name} | Size: {file_size_mb:.2f} MB | Path: {storage_path}")
 
             # Upload to Supabase
             try:
-                supabase.storage.from_("encrypted-files").upload(
+                response = supabase.storage.from_("encrypted-files").upload(
                     storage_path,
                     encrypted_data,
-                    {"content-type": "application/octet-stream"}
+                    file_options={"content-type": "application/octet-stream"}
                 )
+                print("[UPLOAD] Supabase response:", response)
+
             except Exception as e:
-                print("Supabase upload error:", str(e))
                 import traceback
                 traceback.print_exc()
-                return HttpResponse(f"File storage failed: {str(e)}", status=500)
+                return HttpResponse(f"Upload error: {str(e)}", status=500)
+
 
             # Encrypt the encryption key with user's public key
             user_key = UserKey.objects.get(user=request.user)
@@ -469,24 +476,30 @@ def share_page(request):
                 shared_count += 1
 
             # Show appropriate message
-            if shared_count > 0:
-                if shared_count == 1:
-                    messages.success(request, "File shared successfully!")
-                else:
-                    messages.success(request, f"{shared_count} files shared successfully!")
-            
-            if already_shared_count > 0:
-                if already_shared_count == 1:
-                    messages.info(request, "1 file was already shared with this user.")
-                else:
-                    messages.info(request, f"{already_shared_count} files were already shared with this user.")
+            if shared_count > 0 or already_shared_count > 0:
+                pass  # Messages handled by AJAX response or redirect below
 
         except User.DoesNotExist:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
             messages.error(request, "User not found")
         except UserKey.DoesNotExist:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'User does not have encryption keys'}, status=400)
             messages.error(request, "User does not have encryption keys")
         except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': f'Error sharing files: {str(e)}'}, status=500)
             messages.error(request, f"Error sharing files: {str(e)}")
+        else:
+            # Return JSON for AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'shared_count': shared_count,
+                    'already_shared_count': already_shared_count,
+                    'recipient': username,
+                })
 
         return redirect(build_share_page_url(file_ids))
 

@@ -395,7 +395,7 @@
                             </p>
                             <div class="d-flex gap-2 justify-content-center">
                                 <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                                <form method="post" action="{% url 'file_sharing:delete' file.id %}">
+                                <form method="post" action="{% url 'file_sharing:delete' file.id %}" class="delete-file-form" data-filename="{{ file.original_filename|escapejs }}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-danger px-4">
                                         <i class="fas fa-trash me-2"></i>Delete
@@ -439,6 +439,77 @@
             } else {
                 card.style.display = 'none';
             }
+        });
+    });
+
+    // Handle AJAX-based file deletion with progress mock
+    document.querySelectorAll('.delete-file-form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            // Hide the confirmation modal first before showing the progress modal
+            const currentModalEl = this.closest('.modal');
+            const currentModal = bootstrap.Modal.getInstance(currentModalEl);
+            if (currentModal) currentModal.hide();
+
+            const filename = this.getAttribute('data-filename');
+            
+            // Make sure the base.html provides `showDeleteProgressModal`
+            if (typeof showDeleteProgressModal === 'function') {
+                showDeleteProgressModal(filename);
+            }
+
+            const formData = new FormData(this);
+            const xhr = new XMLHttpRequest();
+            const actionUrl = this.getAttribute('action');
+
+            xhr.open('POST', actionUrl);
+            
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable && typeof updateDeleteProgress === 'function') {
+                    const percentComplete = (e.loaded / e.total) * 90; // Up to 90% for request sent
+                    updateDeleteProgress(percentComplete.toFixed(1), 'Sending delete request...');
+                }
+            });
+
+            xhr.addEventListener('load', function () {
+                if (xhr.status === 200 || xhr.status === 302 || xhr.redirected || xhr.status === 204) {
+                    if (typeof updateDeleteProgress === 'function') {
+                        updateDeleteProgress(100, 'Deletion complete. Refreshing...');
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 600);
+                } else {
+                    if (typeof hideDeleteProgressModal === 'function') hideDeleteProgressModal();
+                    alert('Error deleting file: ' + xhr.responseText);
+                }
+            });
+
+            xhr.addEventListener('error', function () {
+                if (typeof hideDeleteProgressModal === 'function') hideDeleteProgressModal();
+                alert('Connection error occurred.');
+            });
+
+            // Fake progression while waiting for the server response after request is fully sent
+            let progress = 90;
+            xhr.upload.addEventListener('load', function() {
+                if (typeof updateDeleteProgress === 'function') {
+                    updateDeleteProgress(progress, 'Removing file securely...');
+                }
+                const progressInterval = setInterval(() => {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        clearInterval(progressInterval);
+                        return;
+                    }
+                    progress += (99 - progress) * 0.1; 
+                    if (typeof updateDeleteProgress === 'function') {
+                        updateDeleteProgress(progress.toFixed(1), 'Processing deletion...');
+                    }
+                }, 300);
+            });
+
+            xhr.send(formData);
         });
     });
 </script>

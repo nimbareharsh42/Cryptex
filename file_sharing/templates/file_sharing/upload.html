@@ -51,6 +51,7 @@
         margin-bottom: 1rem;
         background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         position: relative;
         display: inline-block;
@@ -484,17 +485,37 @@
                     const elapsedTime = (Date.now() - startTime) / 1000;
                     const speed = (e.loaded / (1024 * 1024)) / elapsedTime;
 
-                    updateProgress(
-                        percentComplete.toFixed(1),
-                        speed.toFixed(2),
-                        `Uploaded: ${formatFileSize(e.loaded)} / ${formatFileSize(e.total)}`
-                    );
+                    if(percentComplete < 100) {
+                        updateProgress(
+                            percentComplete.toFixed(1),
+                            speed.toFixed(2),
+                            `Uploading: ${formatFileSize(e.loaded)} / ${formatFileSize(e.total)}`
+                        );
+                    }
+                }
+            });
+
+            xhr.upload.addEventListener('load', function () {
+                // Upload finished, now waiting for server to encrypt and respond
+                if (typeof updateProgress === 'function') {
+                    document.getElementById('progressTitle').textContent = 'Encrypting & Processing';
+                    updateProgress(100, 0, 'Upload complete. Securely encrypting on server...');
+                    
+                    const icon = document.getElementById('progressIcon');
+                    if (icon) {
+                        icon.className = 'fas fa-shield-alt text-success fa-beat-fade';
+                    }
+                    
+                    const pb = document.getElementById('progressBarEl');
+                    if (pb) {
+                        pb.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
+                    }
                 }
             });
 
             xhr.addEventListener('load', function () {
                 if (xhr.status === 200) {
-                    if (typeof updateProgress === 'function') updateProgress(100, 0, 'Finalizing encryption...');
+                    if (typeof updateProgress === 'function') updateProgress(100, 0, 'Upload & Encryption successful!');
                     setTimeout(() => {
                         if (typeof hideProgressModal === 'function') hideProgressModal();
                         if (typeof createConfetti === 'function') createConfetti();

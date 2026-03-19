@@ -802,26 +802,6 @@
     </a>
     {% endif %}
 
-    <!-- Progress Modal -->
-    <div class="modal fade" id="progressModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="progressTitle">Processing File</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="progress mb-3" style="height: 20px;">
-                        <div class="progress-bar progress-bar-animated" role="progressbar" style="width: 0%"></div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span id="progressText">Starting...</span>
-                        <span id="speedText" class="speed-indicator"></span>
-                    </div>
-                    <div id="fileInfo" class="mt-2 small text-muted"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Enhanced Footer -->
     <footer class="footer">
@@ -881,19 +861,44 @@
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
                 <div class="modal-body p-5 text-center">
                     <div class="mb-4">
-                        <i class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem;"></i>
+                        <i id="progressIcon" class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem;"></i>
                     </div>
                     <h4 class="mb-2" id="progressTitle">Uploading File</h4>
                     <p class="text-muted mb-4" id="fileInfo">filename.pdf</p>
 
                     <div class="progress mb-3" style="height: 10px; border-radius: 5px;">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                            style="width: 0%"></div>
+                            style="width: 0%" id="progressBarEl"></div>
                     </div>
 
                     <div class="d-flex justify-content-between text-small text-muted">
                         <span id="progressText">Starting...</span>
                         <span id="speedText">0 MB/s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deletion Progress Modal -->
+    <div class="modal fade" id="deleteProgressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-trash-alt text-danger fa-bounce" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-2">Deleting File</h4>
+                    <p class="text-muted mb-4" id="deleteFileInfo">filename.pdf</p>
+
+                    <div class="progress mb-3" style="height: 10px; border-radius: 5px;">
+                        <div id="deleteProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar"
+                            style="width: 0%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-small text-muted">
+                        <span id="deleteProgressText">Sending request...</span>
+                        <span id="deleteSpeedText">Processing</span>
                     </div>
                 </div>
             </div>
@@ -933,24 +938,68 @@
             document.getElementById('fileInfo').textContent = `${filename} (${formatFileSize(filesize)})`;
             document.getElementById('progressText').textContent = 'Starting...';
             document.getElementById('speedText').textContent = '';
+            
+            // Reset modal icon and progress bar to upload state
+            const icon = document.getElementById('progressIcon');
+            if (icon) {
+                icon.className = 'fas fa-circle-notch fa-spin text-primary';
+            }
+            const pb = document.getElementById('progressBarEl');
+            if(pb) {
+                pb.className = 'progress-bar progress-bar-striped progress-bar-animated';
+                pb.style.width = '0%';
+            }
 
             const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
             progressModal.show();
         }
 
         function updateProgress(percentage, speed, status) {
-            const progressBar = document.querySelector('.progress-bar');
-            progressBar.style.width = percentage + '%';
+            const progressBar = document.getElementById('progressBarEl');
+            if(progressBar) progressBar.style.width = percentage + '%';
             document.getElementById('progressText').textContent = status;
 
-            if (speed) {
-                document.getElementById('speedText').textContent = `${speed} MB/s`;
+            const speedEl = document.getElementById('speedText');
+            if (speedEl) {
+                if (speed) {
+                    speedEl.style.display = 'block';
+                    speedEl.textContent = `${speed} MB/s`;
+                } else {
+                    speedEl.style.display = 'none';
+                }
             }
         }
 
         function hideProgressModal() {
-            const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
-            progressModal.hide();
+            const modalEl = document.getElementById('progressModal');
+            const progressModal = bootstrap.Modal.getInstance(modalEl);
+            if(progressModal) progressModal.hide();
+        }
+
+        function showDeleteProgressModal(filename) {
+            document.getElementById('deleteFileInfo').textContent = filename;
+            document.getElementById('deleteProgressText').textContent = 'Sending request...';
+            document.getElementById('deleteSpeedText').textContent = '';
+            
+            const pb = document.getElementById('deleteProgressBar');
+            if(pb) {
+                pb.style.width = '0%';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteProgressModal'));
+            modal.show();
+        }
+
+        function updateDeleteProgress(percentage, status) {
+            const pb = document.getElementById('deleteProgressBar');
+            if(pb) pb.style.width = percentage + '%';
+            if(status) document.getElementById('deleteProgressText').textContent = status;
+        }
+
+        function hideDeleteProgressModal() {
+            const modalEl = document.getElementById('deleteProgressModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if(modal) modal.hide();
         }
 
         function formatFileSize(bytes) {

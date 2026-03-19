@@ -1,13 +1,13 @@
-from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from .models import UserKey
-
-import base64
+from io import BytesIO
 import os
+
 
 def generate_key_pair():
     """
@@ -88,37 +88,51 @@ def decrypt_with_private_key(encrypted_data, encrypted_private_key, password=Non
         print(f"Error in decrypt_with_private_key: {str(e)}")
         raise e
 
-def encrypt_file(file, key):
-    """
-    Encrypt file using AES encryption
-    """
-    # Generate a Fernet key from our encryption key
-    fernet_key = base64.urlsafe_b64encode(key)
-    fernet = Fernet(fernet_key)
-    
-    # Read file data
-    file_data = file.read()
-    
-    # Encrypt the data
-    encrypted_data = fernet.encrypt(file_data)
-    
-    # Generate a unique filename
-    filename = f"{os.urandom(16).hex()}.enc"
-    
-    return filename, encrypted_data
+
+CHUNK_SIZE = 64 * 1024  # 64KB
+
+
+def encrypt_file(file_obj, key):
+
+    iv = os.urandom(16)
+
+    cipher = Cipher(
+        algorithms.AES(key),
+        modes.CTR(iv)
+    )
+
+    encryptor = cipher.encryptor()
+
+    buffer = BytesIO()
+
+    while True:
+        chunk = file_obj.read(CHUNK_SIZE)
+
+        if not chunk:
+            break
+
+    buffer.write(encryptor.update(chunk))
+
+    buffer.write(encryptor.finalize())
+
+    encrypted_data = iv + buffer.getvalue()
 
 def decrypt_file(encrypted_data, key):
-    """
-    Decrypt file using AES encryption
-    """
-    # Generate a Fernet key from our encryption key
-    fernet_key = base64.urlsafe_b64encode(key)
-    fernet = Fernet(fernet_key)
-    
-    # Decrypt the data
-    decrypted_data = fernet.decrypt(encrypted_data)
-    
+
+    iv = encrypted_data[:16]
+    ciphertext = encrypted_data[16:]
+
+    cipher = Cipher(
+        algorithms.AES(key),
+        modes.CTR(iv)
+    )
+
+    decryptor = cipher.decryptor()
+
+    decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
+
     return decrypted_data
+
 
 def get_client_ip(request):
     """
