@@ -230,8 +230,8 @@
                             <a href="{% url 'file_sharing:user_uploads' %}" class="btn-action btn-primary-soft">
                                 <i class="fas fa-folder me-2"></i>My Files
                             </a>
-                            <a href="{% url 'file_sharing:feedback' %}" class="btn-action btn-outline">
-                                <i class="fas fa-comment-alt me-2"></i>Feedback
+                            <a href="{% if user.is_staff %}{% url 'feedback:feedback_list' %}{% else %}{% url 'file_sharing:feedback' %}{% endif %}" class="btn-action btn-outline">
+                                <i class="fas fa-comment-alt me-2"></i>{% if user.is_staff %}Feedbacks{% else %}Feedback{% endif %}
                             </a>
                         </div>
                     </div>

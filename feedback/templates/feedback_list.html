@@ -1,0 +1,550 @@
+{% extends 'file_sharing/base.html' %}
+
+{% block title %}User Feedback — Cryptex Admin{% endblock %}
+
+{% block content %}
+<style>
+    /* ── Page wrapper ── */
+    .feedback-page {
+        margin: -1.5rem -15px 0 -15px;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    @media (min-width: 768px) {
+        .feedback-page {
+            margin: -1.5rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        }
+    }
+
+    .container-custom {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    /* ── Hero header ── */
+    .page-header {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: 0 20px 40px rgba(26, 35, 50, 0.18);
+    }
+
+    .header-overlay {
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.12) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .header-content { position: relative; z-index: 2; }
+
+    .page-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        margin-bottom: 0.4rem;
+        background: linear-gradient(to right, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .page-description {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 1rem;
+        max-width: 580px;
+    }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.09);
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.purple { background: rgba(102, 126, 234, 0.12); color: #667eea; }
+    .stat-icon.green  { background: rgba(74, 222, 128, 0.12);  color: #22c55e; }
+    .stat-icon.yellow { background: rgba(251, 191, 36, 0.12);  color: #f59e0b; }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1a2332;
+        line-height: 1;
+        margin-top: 0.2rem;
+    }
+
+    /* ── Filter / search bar ── */
+    .filter-bar {
+        background: white;
+        padding: 1rem 1.25rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 240px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.6rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.925rem;
+        transition: all 0.25s ease;
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+    }
+
+    .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+        outline: none;
+        background: white;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.9rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        padding: 0.7rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.925rem;
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        color: #475569;
+        cursor: pointer;
+        transition: border-color 0.25s ease;
+    }
+
+    .filter-select:focus {
+        border-color: #667eea;
+        outline: none;
+    }
+
+    /* ── Feedback table ── */
+    .feedback-table-wrapper {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .feedback-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .feedback-table thead tr {
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+        color: white;
+    }
+
+    .feedback-table thead th {
+        padding: 1.1rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .feedback-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s ease;
+    }
+
+    .feedback-table tbody tr:last-child { border-bottom: none; }
+    .feedback-table tbody tr:hover { background: #f8faff; }
+
+    .feedback-table td {
+        padding: 1.1rem 1.5rem;
+        font-size: 0.92rem;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    /* ── User cell ── */
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #1a2332;
+        font-size: 0.95rem;
+    }
+
+    /* ── Message cell ── */
+    .message-text {
+        max-width: 380px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        color: #475569;
+        line-height: 1.55;
+    }
+
+    /* ── Star rating ── */
+    .star-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .star-rating .star        { font-size: 1rem; }
+    .star-rating .star.filled { color: #f59e0b; }
+    .star-rating .star.empty  { color: #d1d5db; }
+
+    /* ── Rating badge ── */
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .rating-5 { background: rgba(74, 222, 128, 0.15); color: #16a34a; }
+    .rating-4 { background: rgba(132, 204, 22, 0.15);  color: #65a30d; }
+    .rating-3 { background: rgba(251, 191, 36, 0.15); color: #d97706; }
+    .rating-2 { background: rgba(251, 146, 60, 0.15); color: #ea580c; }
+    .rating-1 { background: rgba(239, 68, 68, 0.15);  color: #dc2626; }
+
+    /* ── Date chip ── */
+    .date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        color: #64748b;
+        white-space: nowrap;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 1rem;
+    }
+
+    .empty-illustration {
+        width: 90px;
+        height: 90px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #667eea;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* ── Row fade-in (pure CSS, no Django tags in style) ── */
+    @keyframes rowFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-table tbody tr                { animation: rowFadeIn 0.35s ease both; }
+    .feedback-table tbody tr:nth-child(1)   { animation-delay: 0ms; }
+    .feedback-table tbody tr:nth-child(2)   { animation-delay: 60ms; }
+    .feedback-table tbody tr:nth-child(3)   { animation-delay: 120ms; }
+    .feedback-table tbody tr:nth-child(4)   { animation-delay: 180ms; }
+    .feedback-table tbody tr:nth-child(5)   { animation-delay: 240ms; }
+    .feedback-table tbody tr:nth-child(6)   { animation-delay: 300ms; }
+    .feedback-table tbody tr:nth-child(7)   { animation-delay: 360ms; }
+    .feedback-table tbody tr:nth-child(8)   { animation-delay: 420ms; }
+    .feedback-table tbody tr:nth-child(9)   { animation-delay: 480ms; }
+    .feedback-table tbody tr:nth-child(n+10) { animation-delay: 540ms; }
+</style>
+
+<div class="feedback-page">
+    <div class="container-custom">
+
+        <!-- ── Page Header ── -->
+        <div class="page-header">
+            <div class="header-overlay"></div>
+            <div class="header-content d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title">
+                        <i class="fas fa-comments me-2" style="font-size:1.6rem;"></i>User Feedback
+                    </h1>
+                    <p class="page-description">
+                        Review and analyse all feedback submitted by Cryptex users.
+                    </p>
+                </div>
+                <div class="d-none d-md-flex align-items-center gap-2">
+                    <span class="badge rounded-pill px-3 py-2"
+                          style="background:rgba(255,255,255,0.15); color:white; font-size:0.85rem;">
+                        <i class="fas fa-shield-alt me-1"></i>Admin View
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Stat Cards ── -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
+                <div>
+                    <div class="stat-label">Total Feedback</div>
+                    <div class="stat-value" id="totalCount">{{ feedbacks|length }}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-star"></i></div>
+                <div>
+                    <div class="stat-label">Avg. Rating</div>
+                    <div class="stat-value" id="avgRating">—</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fas fa-trophy"></i></div>
+                <div>
+                    <div class="stat-label">5-Star Reviews</div>
+                    <div class="stat-value" id="fiveStarCount">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Filter Bar ── -->
+        <div class="filter-bar">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="feedbackSearch"
+                       placeholder="Search by user or message…">
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <select class="filter-select" id="ratingFilter">
+                    <option value="">All Ratings</option>
+                    <option value="5">⭐⭐⭐⭐⭐ &nbsp;5 Stars</option>
+                    <option value="4">⭐⭐⭐⭐ &nbsp;4 Stars</option>
+                    <option value="3">⭐⭐⭐ &nbsp;3 Stars</option>
+                    <option value="2">⭐⭐ &nbsp;2 Stars</option>
+                    <option value="1">⭐ &nbsp;1 Star</option>
+                </select>
+                <span class="text-muted small" id="resultCount"></span>
+            </div>
+        </div>
+
+        <!-- ── Feedback Table ── -->
+        <div class="feedback-table-wrapper">
+            {% if feedbacks %}
+            <div style="overflow-x: auto;">
+                <table class="feedback-table" id="feedbackTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-user me-2"></i>User</th>
+                            <th><i class="fas fa-envelope-open-text me-2"></i>Message</th>
+                            <th><i class="fas fa-star me-2"></i>Rating</th>
+                            <th><i class="fas fa-calendar-alt me-2"></i>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackBody">
+                        {% for f in feedbacks %}
+                        <tr data-user="{{ f.user.username|lower }}"
+                            data-message="{{ f.message|lower }}"
+                            data-rating="{{ f.rating }}">
+
+                            <!-- User -->
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">
+                                        {{ f.user.username|make_list|first|upper }}
+                                    </div>
+                                    <span class="user-name">{{ f.user.username }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Message -->
+                            <td>
+                                <div class="message-text" title="{{ f.message }}">
+                                    {{ f.message }}
+                                </div>
+                            </td>
+
+                            <!-- Rating -->
+                            <td>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="rating-badge rating-{{ f.rating }}">
+                                        <i class="fas fa-star" style="font-size:0.75rem;"></i>
+                                        {{ f.rating }}&nbsp;/ 5
+                                    </span>
+                                    <div class="star-rating">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= f.rating %}
+                                                <span class="star filled">★</span>
+                                            {% else %}
+                                                <span class="star empty">★</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Date -->
+                            <td>
+                                <span class="date-chip">
+                                    <i class="far fa-clock"></i>
+                                    {{ f.created_at|date:"M d, Y" }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty state -->
+            <div class="empty-state">
+                <div class="empty-illustration">
+                    <i class="fas fa-comment-slash"></i>
+                </div>
+                <h3 class="fw-bold" style="color:#1a2332;">No feedback yet</h3>
+                <p class="text-muted">When users submit feedback it will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div><!-- /.container-custom -->
+</div><!-- /.feedback-page -->
+
+<script>
+(function () {
+    /* ── Compute stats from rendered table rows ── */
+    var rows       = Array.from(document.querySelectorAll('#feedbackBody tr'));
+    var total      = rows.length;
+    var ratingSum  = 0;
+    var fiveStars  = 0;
+
+    rows.forEach(function (r) {
+        var rating = parseInt(r.dataset.rating, 10);
+        if (!isNaN(rating)) {
+            ratingSum += rating;
+            if (rating === 5) fiveStars++;
+        }
+    });
+
+    var avg = total ? (ratingSum / total).toFixed(1) : '—';
+    document.getElementById('avgRating').textContent     = total ? avg : '—';
+    document.getElementById('fiveStarCount').textContent = total ? fiveStars : '—';
+    document.getElementById('resultCount').textContent   =
+        total + ' entr' + (total === 1 ? 'y' : 'ies');
+
+    /* ── Live search + rating filter ── */
+    function applyFilters() {
+        var searchVal = document.getElementById('feedbackSearch').value.toLowerCase();
+        var ratingVal = document.getElementById('ratingFilter').value;
+        var visible   = 0;
+
+        rows.forEach(function (row) {
+            var user    = row.dataset.user    || '';
+            var message = row.dataset.message || '';
+            var rating  = row.dataset.rating  || '';
+
+            var matchSearch = !searchVal || user.includes(searchVal) || message.includes(searchVal);
+            var matchRating = !ratingVal || rating === ratingVal;
+
+            if (matchSearch && matchRating) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('resultCount').textContent =
+            visible + ' entr' + (visible === 1 ? 'y' : 'ies');
+    }
+
+    var searchEl = document.getElementById('feedbackSearch');
+    var filterEl = document.getElementById('ratingFilter');
+    if (searchEl) searchEl.addEventListener('input', applyFilters);
+    if (filterEl) filterEl.addEventListener('change', applyFilters);
+})();
+</script>
+{% endblock %}
