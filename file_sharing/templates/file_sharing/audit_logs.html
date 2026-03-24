@@ -149,7 +149,6 @@
                             <th>Activity</th>
                             <th>File Involved</th>
                             <th>Details</th>
-                            <th>IP Address</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -175,14 +174,17 @@
                                     <i class="fas fa-file text-muted"></i>
                                     <span class="fw-medium">{{ log.file.original_filename }}</span>
                                 </div>
+                                {% elif log.file_name_snapshot %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-file text-muted"></i>
+                                    <span class="fw-medium">{{ log.file_name_snapshot }}</span>
+                                    <span class="text-muted small">(deleted)</span>
+                                </div>
                                 {% else %}
                                 <span class="text-muted fst-italic">File deleted</span>
                                 {% endif %}
                             </td>
                             <td>{{ log.details }}</td>
-                            <td><code
-                                    class="text-muted bg-light px-2 py-1 rounded">{{ log.ip_address|default:"Unknown" }}</code>
-                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -7,9 +7,9 @@
     /* Reuse shared styling */
     .feedback-page {
         margin: -1.5rem -15px 0 -15px;
-        background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         min-height: calc(100vh - 200px);
-        padding: 2rem 0;
+        padding: 3rem 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -23,78 +23,181 @@
 
     .feedback-card {
         background: white;
-        border-radius: 24px;
-        padding: 3rem;
+        border-radius: 28px;
+        padding: 3.5rem 3rem;
         width: 100%;
-        max-width: 550px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        max-width: 600px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.8);
         text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feedback-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
     }
 
     .icon-wrapper {
-        width: 70px;
-        height: 70px;
-        background: linear-gradient(135deg, #fceb9a 0%, #fcd34d 100%);
-        color: #92400e;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #d97706;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
+        font-size: 2.2rem;
         margin: 0 auto 1.5rem;
+        box-shadow: 0 10px 20px rgba(253, 230, 138, 0.4);
+    }
+    
+    .feedback-title {
+        font-size: 2.2rem;
+        color: #1a2332;
+        letter-spacing: -0.5px;
     }
 
     .form-control {
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 16px;
+        padding: 1.25rem;
         border: 2px solid #e2e8f0;
+        background-color: #f8fafc;
         resize: none;
         transition: all 0.3s ease;
+        font-size: 1rem;
+        color: #334155;
     }
 
     .form-control:focus {
-        border-color: #fcd34d;
-        box-shadow: 0 0 0 4px rgba(252, 211, 77, 0.2);
+        border-color: #667eea;
+        background-color: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        outline: none;
+    }
+    
+    .form-label {
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+    }
+
+    /* Interactive Star Rating */
+    .rating-section {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .rating-wrapper {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .rating-wrapper input {
+        display: none;
+    }
+
+    .rating-wrapper label {
+        cursor: pointer;
+        font-size: 2.2rem;
+        color: #cbd5e1;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    /* Hover and Selection Logic for Stars */
+    .rating-wrapper label:hover,
+    .rating-wrapper label:hover ~ label,
+    .rating-wrapper input:checked ~ label {
+        color: #fbbf24;
+    }
+
+    .rating-wrapper label:hover {
+        transform: scale(1.15);
+    }
+    
+    /* Animation for star selection */
+    @keyframes starPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    .rating-wrapper input:checked + label {
+        animation: starPulse 0.3s ease forwards;
     }
 
     .btn-submit {
-        background: black;
+        background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
         color: white;
         border: none;
-        padding: 1rem;
-        border-radius: 12px;
+        padding: 1.15rem;
+        border-radius: 14px;
         font-weight: 700;
+        font-size: 1.1rem;
         width: 100%;
-        margin-top: 1.5rem;
+        margin-top: 2rem;
         transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(26, 35, 50, 0.2);
     }
 
     .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(26, 35, 50, 0.3);
+        background: linear-gradient(135deg, #2c3e50 0%, #3e5062 100%);
     }
 </style>
 
 <div class="feedback-page">
     <div class="feedback-card">
         <div class="icon-wrapper">
-            <i class="fas fa-lightbulb"></i>
+            <i class="fas fa-heart"></i>
         </div>
-        <h2 class="mb-2 fw-bold">We Value Your Input</h2>
-        <p class="text-muted mb-4">Help us improve Cryptex. Share your thoughts, report bugs, or suggest new features.
+        <h2 class="feedback-title mb-2 fw-bold">We Value Your Input</h2>
+        <p class="text-muted mb-4" style="font-size: 1.05rem; line-height: 1.6;">
+            Help us improve Cryptex. Share your thoughts, report bugs, or suggest new features.
         </p>
 
-        <form method="post" action="{% url 'submit_feedback' %}">
+        <!-- form action targets submit_feedback -->
+
+        <form method="post" action="{% url 'feedback:submit_feedback' %}" id="feedbackForm">
             {% csrf_token %}
+            
             <div class="text-start">
-                <label class="fw-bold mb-2 ps-1">Your Message</label>
-                <textarea name="feedback" class="form-control" rows="5" placeholder="Tell us what you think..."
+                <label class="form-label ps-1">Your Message</label>
+                <textarea name="message" class="form-control" rows="5" placeholder="Tell us what you think..."
                     required></textarea>
             </div>
-
+            
+            <div class="rating-section text-center">
+                <label class="form-label mb-1" style="display: block; color: #475569;">How would you rate your experience?</label>
+                <div class="rating-wrapper">
+                    <input type="radio" id="star5" name="rating" value="5" required />
+                    <label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" />
+                    <label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" />
+                    <label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" />
+                    <label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" />
+                    <label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                </div>
+            </div>
+            
             <button type="submit" class="btn-submit">
-                Submit Feedback
+                <i class="fas fa-paper-plane me-2"></i> Submit Feedback
             </button>
         </form>
     </div>

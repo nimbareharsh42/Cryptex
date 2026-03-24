@@ -703,9 +703,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'feedback' %}active{% endif %}"
-                            href="{% url 'file_sharing:feedback' %}">
-                            <i class="fas fa-comment me-1"></i>Feedback
+                        <a class="nav-link {% if request.resolver_match.url_name == 'feedback' or request.resolver_match.url_name == 'feedback_list' %}active{% endif %}"
+                            href="{% if user.is_staff %}{% url 'feedback:feedback_list' %}{% else %}{% url 'file_sharing:feedback' %}{% endif %}">
+                            <i class="fas fa-comment me-1"></i>{% if user.is_staff %}Feedbacks{% else %}Feedback{% endif %}
                         </a>
                     </li>
                 </ul>
@@ -780,12 +780,49 @@
     <main class="main-content">
         <div class="container mt-4">
             {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="global-messages-wrapper" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1060; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; pointer-events: none;">
+                {% for message in messages %}
+                <div class="custom-toast fade show" role="alert" style="pointer-events: auto; background: rgba(26, 35, 50, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); border-radius: 100px; padding: 12px 20px 12px 12px; color: white; display: flex; align-items: center; justify-content: space-between; animation: toastSlideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+                    <div class="d-flex align-items-center gap-3">
+                        {% if message.tags == 'success' %}
+                        <div style="background: linear-gradient(135deg, #10b981, #059669); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                            <i class="fas fa-check" style="font-size: 1rem;"></i>
+                        </div>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+                            <i class="fas fa-exclamation" style="font-size: 1rem;"></i>
+                        </div>
+                        {% else %}
+                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
+                            <i class="fas fa-info" style="font-size: 1rem;"></i>
+                        </div>
+                        {% endif %}
+                        <span style="font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px;">{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white ms-3" aria-label="Close" onclick="this.closest('.custom-toast').remove()" style="opacity: 0.7; font-size: 0.75rem; padding: 0.5rem;"></button>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            <style>
+                @keyframes toastSlideDown {
+                    from { transform: translateY(-120%) scale(0.9); opacity: 0; }
+                    to { transform: translateY(0) scale(1); opacity: 1; }
+                }
+            </style>
+            <script>
+                // Auto dismiss custom toasts after 5 seconds
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toasts = document.querySelectorAll('.custom-toast');
+                    toasts.forEach(toast => {
+                        setTimeout(() => {
+                            toast.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateY(-100%) scale(0.9)';
+                            setTimeout(() => toast.remove(), 500);
+                        }, 5000);
+                    });
+                });
+            </script>
             {% endif %}
 
             {% block content %}
@@ -796,7 +833,7 @@
     <!-- Chat Bubble -->
     <!-- Feedback Bubble -->
     {% if user.is_authenticated %}
-    <a href="{% url 'file_sharing:feedback' %}" class="chat-bubble" title="Give Feedback"
+    <a href="{% if user.is_staff %}{% url 'feedback:feedback_list' %}{% else %}{% url 'file_sharing:feedback' %}{% endif %}" class="chat-bubble" title="{% if user.is_staff %}View Feedbacks{% else %}Give Feedback{% endif %}"
         style="text-decoration: none;">
         <i class="fas fa-comment-dots fa-lg"></i>
     </a>
