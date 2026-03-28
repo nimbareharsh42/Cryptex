@@ -131,7 +131,7 @@
     /* Share Card Grid */
     .share-form-grid {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 2.5rem;
         position: relative;
         z-index: 1;
@@ -139,7 +139,7 @@
 
     @media (min-width: 992px) {
         .share-form-grid {
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
         }
     }
 
@@ -150,6 +150,7 @@
         z-index: 2;
         isolation: isolate;
         overflow: visible;
+        min-width: 0;
     }
 
     /* Share Card */
@@ -200,6 +201,11 @@
         position: relative;
         z-index: 4;
         background: transparent;
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-word;
+        flex: 1;
+        min-width: 0;
     }
 
     /* File Selection */
