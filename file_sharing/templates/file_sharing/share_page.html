@@ -1335,16 +1335,16 @@
 
             if (data.status === 'success') {
                 // Populate success modal fields
-                const fileCount = data.shared_count;
+                const fileCount = data.shared_count + (data.already_shared_count || 0);
                 document.getElementById('successFileCount').textContent =
                     fileCount === 1 ? '1 file' : `${fileCount} files`;
                 document.getElementById('successRecipient').textContent = `@${data.recipient}`;
 
                 let subtitle = '';
-                if (fileCount > 0) {
-                    subtitle = fileCount === 1
+                if (data.shared_count > 0) {
+                    subtitle = data.shared_count === 1
                         ? 'Your file has been securely encrypted and shared.'
-                        : `${fileCount} files have been securely encrypted and shared.`;
+                        : `${data.shared_count} files have been securely encrypted and shared.`;
                 }
                 if (data.already_shared_count > 0) {
                     subtitle += (subtitle ? ' ' : '') +

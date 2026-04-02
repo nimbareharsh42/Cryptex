@@ -388,7 +388,7 @@
                         </h5>
                         <div class="file-meta">
                             <i class="far fa-calendar-alt"></i>
-                            {{ share.shared_file.upload_date|date:"M d, Y" }}
+                            {{ share.shared_date|date:"M d, Y" }}
                         </div>
                         <div class="shared-info">
                             <div class="avatar-xs">{{ share.shared_file.owner.username|first|upper }}</div>
@@ -451,7 +451,7 @@
                         </h5>
                         <div class="file-meta">
                             <i class="far fa-calendar-alt"></i>
-                            {{ share.shared_file.upload_date|date:"M d, Y" }}
+                            {{ share.shared_date|date:"M d, Y" }}
                         </div>
                         <div class="shared-info">
                             <div class="avatar-xs">{{ share.shared_with.username|first|upper }}</div>

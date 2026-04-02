@@ -377,6 +377,8 @@ def share_page(request):
             
             # Check if not sharing with yourself
             if recipient == request.user:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': 'You cannot share files with yourself'}, status=400)
                 messages.error(request, "You cannot share files with yourself")
                 return redirect(build_share_page_url(file_ids))
 
