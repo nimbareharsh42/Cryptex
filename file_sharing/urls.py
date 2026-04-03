@@ -1,8 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-from .views import supabase_login
-
 
 app_name = 'file_sharing'
 
@@ -26,6 +24,5 @@ urlpatterns = [
     path('my-uploads/', views.user_uploads, name='user_uploads'),
     path('feedback/', views.feedback, name='feedback'),
     
-    path("auth/supabase-login/", supabase_login),
 
 ]

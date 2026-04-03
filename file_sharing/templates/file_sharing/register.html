@@ -450,15 +450,6 @@
                 </button>
             </form>
 
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-
-            <button onclick="loginWithGoogle()" class="btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-                Sign up with Google
-            </button>
-
             <!-- Footer -->
             <div class="register-footer">
                 <p>Already have an account? <a href="{% url 'file_sharing:login' %}">Sign in here</a></p>
@@ -466,13 +457,4 @@
         </div>
     </div>
 </div>
-
-<script>
-async function loginWithGoogle() {
-  const { error} = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google'
-  })
-  if (error) console.log(error)
-}
-</script>
 {% endblock %}

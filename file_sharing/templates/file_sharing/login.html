@@ -370,18 +370,9 @@
 
                 <button type="submit" class="btn-primary-custom">
                     <i class="fas fa-sign-in-alt me-2"></i>
-                    Login
+                    Sign In
                 </button>
             </form>
-
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-
-            <button onclick="loginWithGoogle()" class="btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-                Login with Google
-            </button>
 
             <!-- Footer -->
             <div class="login-footer">
@@ -390,13 +381,4 @@
         </div>
     </div>
 </div>
-
-<script>
-async function loginWithGoogle() {
-  const { error} = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google'
-  })
-  if (error) console.log(error)
-}
-</script>
 {% endblock %}

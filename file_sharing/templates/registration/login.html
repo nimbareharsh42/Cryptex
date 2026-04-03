@@ -32,20 +32,7 @@
                 <input type="hidden" name="next" value="{{ next }}">
             </form>
             
-            <div class="d-flex align-items-center my-4">
-                <hr class="flex-grow-1 m-0">
-                <span class="mx-3 text-muted">or continue with</span>
-                <hr class="flex-grow-1 m-0">
-            </div>
-            
-            <div class="d-grid mb-4">
-                <button onclick="loginWithGoogle()" class="btn btn-light btn-lg border d-flex align-items-center justify-content-center gap-2" style="background-color: white; font-weight: 500;">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" style="width: 20px; height: 20px;">
-                    Sign in with Google
-                </button>
-            </div>
-            
-            <hr class="mb-4 mt-0">
+            <hr class="my-4">
             
             <p class="text-center text-muted">
                 <small>
@@ -56,13 +43,4 @@
         </div>
     </div>
 </div>
-
-<script>
-async function loginWithGoogle() {
-  const { error} = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google'
-  })
-  if (error) console.log(error)
-}
-</script>
 {% endblock %}
