@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
@@ -10,6 +10,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from urllib.parse import urlencode
 from .forms import CustomUserCreationForm
+from jose import jwt
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import SharedFile, FileShare, AccessLog, UserKey, Feedback
 from .utils import (
@@ -483,3 +485,31 @@ def submit_feedback(request):
 
     return render(request, "feedback.html")
 
+User = get_user_model()
+
+SUPABASE_JWT_SECRET = "YOUR_SUPABASE_JWT_SECRET"
+
+@csrf_exempt
+def supabase_login(request):
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return JsonResponse({"error": "No token"}, status=401)
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+    except Exception:
+        return JsonResponse({"error": "Invalid token"}, status=401)
+
+    email = payload.get("email")
+
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={"username": email}
+    )
+
+    login(request, user)
+
+    return JsonResponse({"status": "logged in"})
