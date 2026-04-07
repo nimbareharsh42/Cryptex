@@ -27,6 +27,9 @@ urlpatterns = [
     path('feedback/', views.feedback, name='feedback'),
 
     path("auth/supabase-login/", supabase_login, name='supabase_login'),
+
+    # urls.py - add this line temporarily
+    path("debug/auth/", views.debug_auth, name="debug_auth"),
     
 
 ]

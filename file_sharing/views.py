@@ -559,3 +559,25 @@ def supabase_login(request):
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
     return JsonResponse({"status": "logged in", "created": created})
+
+
+@csrf_exempt
+def debug_auth(request):
+    raw_secret = config("SUPABASE_JWT_SECRET", default="NOT_SET")
+    
+    secret_status = "NOT_SET"
+    if raw_secret != "NOT_SET":
+        try:
+            decoded = base64.b64decode(raw_secret)
+            secret_status = f"SET - base64 decodes to {len(decoded)} bytes"
+        except Exception:
+            secret_status = f"SET - not base64, length={len(raw_secret)}"
+
+    auth_header = request.headers.get("Authorization", "MISSING")
+    
+    return JsonResponse({
+        "SUPABASE_JWT_SECRET": secret_status,
+        "auth_header_present": auth_header != "MISSING",
+        "auth_header_prefix": auth_header[:20] if auth_header != "MISSING" else "MISSING",
+        "code_version": "v2"   # bump this each deploy to confirm new code is live
+    })
