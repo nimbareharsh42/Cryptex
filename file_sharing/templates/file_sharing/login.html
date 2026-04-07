@@ -429,7 +429,7 @@ async function loginWithGoogle() {
 const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
-        redirectTo: window.location.origin + '/login/'  // ← returns to login page where handleSupabaseCallback lives
+        redirectTo: window.location.origin + '/login/' 
     }
 })
 if (error) console.error(error);
