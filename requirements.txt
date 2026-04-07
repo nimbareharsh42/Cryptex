@@ -7,7 +7,7 @@ cffi==1.17.1
 charset-normalizer==3.4.6
 click==8.3.1
 colorama==0.4.6
-cryptography==46.0.5
+cryptography==3.4.8
 deprecation==2.1.0
 Django==5.2.12
 django-allauth==65.15.0
