@@ -669,9 +669,10 @@
             <a class="navbar-brand" id="icon-route" href="{% url 'file_sharing:dashboard' %}">
                 <i class="fas fa-lock me-2"></i>CRYPTEX
             </a>
-            
+
             <!-- Hamburger Menu Button -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -780,38 +781,52 @@
     <main class="main-content">
         <div class="container mt-4">
             {% if messages %}
-            <div class="global-messages-wrapper" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1060; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; pointer-events: none;">
+            <div class="global-messages-wrapper"
+                style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1060; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; pointer-events: none;">
                 {% for message in messages %}
-                <div class="custom-toast fade show" role="alert" style="pointer-events: auto; background: rgba(26, 35, 50, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); border-radius: 100px; padding: 12px 20px 12px 12px; color: white; display: flex; align-items: center; justify-content: space-between; animation: toastSlideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+                <div class="custom-toast fade show" role="alert"
+                    style="pointer-events: auto; background: rgba(26, 35, 50, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); border-radius: 100px; padding: 12px 20px 12px 12px; color: white; display: flex; align-items: center; justify-content: space-between; animation: toastSlideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
                     <div class="d-flex align-items-center gap-3">
                         {% if message.tags == 'success' %}
-                        <div style="background: linear-gradient(135deg, #10b981, #059669); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                        <div
+                            style="background: linear-gradient(135deg, #10b981, #059669); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                             <i class="fas fa-check" style="font-size: 1rem;"></i>
                         </div>
                         {% elif message.tags == 'error' or message.tags == 'danger' %}
-                        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+                        <div
+                            style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
                             <i class="fas fa-exclamation" style="font-size: 1rem;"></i>
                         </div>
                         {% else %}
-                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
+                        <div
+                            style="background: linear-gradient(135deg, #3b82f6, #2563eb); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
                             <i class="fas fa-info" style="font-size: 1rem;"></i>
                         </div>
                         {% endif %}
                         <span style="font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px;">{{ message }}</span>
                     </div>
-                    <button type="button" class="btn-close btn-close-white ms-3" aria-label="Close" onclick="this.closest('.custom-toast').remove()" style="opacity: 0.7; font-size: 0.75rem; padding: 0.5rem;"></button>
+                    <button type="button" class="btn-close btn-close-white ms-3" aria-label="Close"
+                        onclick="this.closest('.custom-toast').remove()"
+                        style="opacity: 0.7; font-size: 0.75rem; padding: 0.5rem;"></button>
                 </div>
                 {% endfor %}
             </div>
             <style>
                 @keyframes toastSlideDown {
-                    from { transform: translateY(-120%) scale(0.9); opacity: 0; }
-                    to { transform: translateY(0) scale(1); opacity: 1; }
+                    from {
+                        transform: translateY(-120%) scale(0.9);
+                        opacity: 0;
+                    }
+
+                    to {
+                        transform: translateY(0) scale(1);
+                        opacity: 1;
+                    }
                 }
             </style>
             <script>
                 // Auto dismiss custom toasts after 5 seconds
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     const toasts = document.querySelectorAll('.custom-toast');
                     toasts.forEach(toast => {
                         setTimeout(() => {
@@ -833,7 +848,8 @@
     <!-- Chat Bubble -->
     <!-- Feedback Bubble -->
     {% if user.is_authenticated %}
-    <a href="{% if user.is_staff %}{% url 'feedback:feedback_list' %}{% else %}{% url 'file_sharing:feedback' %}{% endif %}" class="chat-bubble" title="{% if user.is_staff %}View Feedbacks{% else %}Give Feedback{% endif %}"
+    <a href="{% if user.is_staff %}{% url 'feedback:feedback_list' %}{% else %}{% url 'file_sharing:feedback' %}{% endif %}"
+        class="chat-bubble" title="{% if user.is_staff %}View Feedbacks{% else %}Give Feedback{% endif %}"
         style="text-decoration: none;">
         <i class="fas fa-comment-dots fa-lg"></i>
     </a>
@@ -898,7 +914,8 @@
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
                 <div class="modal-body p-5 text-center">
                     <div class="mb-4">
-                        <i id="progressIcon" class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem;"></i>
+                        <i id="progressIcon" class="fas fa-circle-notch fa-spin text-primary"
+                            style="font-size: 3rem;"></i>
                     </div>
                     <h4 class="mb-2" id="progressTitle">Uploading File</h4>
                     <p class="text-muted mb-4" id="fileInfo">filename.pdf</p>
@@ -929,7 +946,8 @@
                     <p class="text-muted mb-4" id="deleteFileInfo">filename.pdf</p>
 
                     <div class="progress mb-3" style="height: 10px; border-radius: 5px;">
-                        <div id="deleteProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar"
+                        <div id="deleteProgressBar"
+                            class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar"
                             style="width: 0%"></div>
                     </div>
 
@@ -975,14 +993,14 @@
             document.getElementById('fileInfo').textContent = `${filename} (${formatFileSize(filesize)})`;
             document.getElementById('progressText').textContent = 'Starting...';
             document.getElementById('speedText').textContent = '';
-            
+
             // Reset modal icon and progress bar to upload state
             const icon = document.getElementById('progressIcon');
             if (icon) {
                 icon.className = 'fas fa-circle-notch fa-spin text-primary';
             }
             const pb = document.getElementById('progressBarEl');
-            if(pb) {
+            if (pb) {
                 pb.className = 'progress-bar progress-bar-striped progress-bar-animated';
                 pb.style.width = '0%';
             }
@@ -993,7 +1011,7 @@
 
         function updateProgress(percentage, speed, status) {
             const progressBar = document.getElementById('progressBarEl');
-            if(progressBar) progressBar.style.width = percentage + '%';
+            if (progressBar) progressBar.style.width = percentage + '%';
             document.getElementById('progressText').textContent = status;
 
             const speedEl = document.getElementById('speedText');
@@ -1010,16 +1028,16 @@
         function hideProgressModal() {
             const modalEl = document.getElementById('progressModal');
             const progressModal = bootstrap.Modal.getInstance(modalEl);
-            if(progressModal) progressModal.hide();
+            if (progressModal) progressModal.hide();
         }
 
         function showDeleteProgressModal(filename) {
             document.getElementById('deleteFileInfo').textContent = filename;
             document.getElementById('deleteProgressText').textContent = 'Sending request...';
             document.getElementById('deleteSpeedText').textContent = '';
-            
+
             const pb = document.getElementById('deleteProgressBar');
-            if(pb) {
+            if (pb) {
                 pb.style.width = '0%';
             }
 
@@ -1029,14 +1047,14 @@
 
         function updateDeleteProgress(percentage, status) {
             const pb = document.getElementById('deleteProgressBar');
-            if(pb) pb.style.width = percentage + '%';
-            if(status) document.getElementById('deleteProgressText').textContent = status;
+            if (pb) pb.style.width = percentage + '%';
+            if (status) document.getElementById('deleteProgressText').textContent = status;
         }
 
         function hideDeleteProgressModal() {
             const modalEl = document.getElementById('deleteProgressModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if(modal) modal.hide();
+            if (modal) modal.hide();
         }
 
         function formatFileSize(bytes) {
@@ -1095,6 +1113,50 @@
             }
         });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            "https://hcvljhpekmyulnugxagy.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjdmxqaHBla215dWxudWd4YWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTA3NjYsImV4cCI6MjA4ODUyNjc2Nn0.e5UoCXIBXcH2Zd4EIR7NkfPwX99fOlEnSic5k2o22Uo"
+        )
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseClient = supabase.createClient(
+  "https://hcvjlhpekmyulnugxagy.supabase.co",
+  "YOUR_ANON_KEY"
+)
+
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  console.log("Auth event:", event)
+
+  if (event === "SIGNED_IN" && session) {
+    console.log("User signed in")
+
+    // 🔥 call Django backend
+    const res = await fetch("/auth/supabase-login/", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${session.access_token}`
+      }
+    })
+
+    const data = await res.json()
+    console.log("Backend response:", data)
+
+    // 🔥 redirect AFTER login
+    if (data.status === "logged in") {
+      window.location.href = "/dashboard/"
+    }
+  }
+})
+</script>
 
     {% block extra_scripts %}
     {% endblock %}
