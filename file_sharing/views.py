@@ -497,7 +497,7 @@ def supabase_login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    jwt_secret = config("SUPABASE_JWT_SECRET", default=config("SUPABASE_JWT_SECRET", default="SUPABASE_JWT_SECRET"))
+    jwt_secret = config("SUPABASE_JWT_SECRET", default="")
     if not jwt_secret or jwt_secret == "SUPABASE_JWT_SECRET":
         return JsonResponse({"error": "SUPABASE_JWT_SECRET is not configured"}, status=500)
 
