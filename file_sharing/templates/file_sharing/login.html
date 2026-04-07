@@ -426,13 +426,16 @@ function clearAuthParamsFromUrl() {
 }
 
 async function loginWithGoogle() {
-const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-        redirectTo: window.location.origin + '/login/' 
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + '/login/'
+        }
+    })
+
+    if (error) {
+        console.error(error)
     }
-})
-if (error) console.error(error);
 }
 
 async function handleSupabaseCallback() {
