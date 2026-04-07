@@ -1,3 +1,5 @@
+import base64
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, get_user_model
@@ -11,7 +13,7 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from decouple import config
 from .forms import CustomUserCreationForm
-from jose import jwt
+from jose import jwt, JWTError
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -19,7 +21,8 @@ from .models import SharedFile, FileShare, AccessLog, UserKey, Feedback
 from .utils import (
     encrypt_with_public_key,
     decrypt_with_private_key,
-    get_client_ip
+    get_client_ip,
+    create_user_keys
 )
 from .services.supabase_service import (
     upload_file_to_storage,
@@ -489,38 +492,49 @@ def submit_feedback(request):
 
 User = get_user_model()
 
-SUPABASE_JWT_SECRET = "SUPABASE_JWT_SECRET"
-
-
 @csrf_exempt
 def supabase_login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    jwt_secret = config("SUPABASE_JWT_SECRET", default="")
-    if not jwt_secret or jwt_secret == "SUPABASE_JWT_SECRET":
+    # 1. Load and decode the JWT secret
+    raw_secret = config("SUPABASE_JWT_SECRET", default="")
+    if not raw_secret:
         return JsonResponse({"error": "SUPABASE_JWT_SECRET is not configured"}, status=500)
 
-    auth_header = request.headers.get("Authorization")
+    try:
+        jwt_secret = base64.b64decode(raw_secret)
+    except Exception:
+        jwt_secret = raw_secret.encode("utf-8")
 
-    if not auth_header:
-        return JsonResponse({"error": "No token"}, status=401)
-
+    # 2. Extract Bearer token from Authorization header
+    auth_header = request.headers.get("Authorization", "")
     parts = auth_header.split()
+
     if len(parts) != 2 or parts[0].lower() != "bearer":
-        return JsonResponse({"error": "Invalid authorization header format"}, status=401)
+        return JsonResponse({"error": "Missing or invalid Authorization header"}, status=401)
 
     token = parts[1]
 
+    # 3. Decode and verify the JWT
     try:
-        payload = jwt.decode(token, jwt_secret, algorithms=["HS256"])
-    except Exception:
-        return JsonResponse({"error": "Invalid token"}, status=401)
+        payload = jwt.decode(
+            token,
+            jwt_secret,
+            algorithms=["HS256"],
+            options={"verify_aud": False}  # Supabase tokens have audience "authenticated"
+        )
+    except JWTError as e:
+        return JsonResponse({"error": f"Invalid token: {str(e)}"}, status=401)
+    except Exception as e:
+        return JsonResponse({"error": f"Token decode failed: {str(e)}"}, status=401)
 
+    # 4. Extract email from payload
     email = payload.get("email")
     if not email:
         return JsonResponse({"error": "Token does not contain email"}, status=400)
 
+    # 5. Get or create Django user
     user = User.objects.filter(email=email).first()
     created = False
 
@@ -537,10 +551,11 @@ def supabase_login(request):
         user = User.objects.create_user(username=candidate, email=email)
         created = True
 
-    if created:
-        from .utils import create_user_keys
+    # 6. Create encryption keys for new users
+    if created or not UserKey.objects.filter(user=user).exists():
         create_user_keys(user)
 
-    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    # 7. Log the user into Django session
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
-    return JsonResponse({"status": "logged in"})
+    return JsonResponse({"status": "logged in", "created": created})
