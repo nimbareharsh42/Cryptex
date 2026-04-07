@@ -730,4 +730,50 @@
         counters.forEach(counter => observer.observe(counter));
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const supabaseClient = window.supabase.createClient(
+        "https://hcvljhpekmyulnugxagy.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjdmxqaHBla215dWxudWd4YWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTA3NjYsImV4cCI6MjA4ODUyNjc2Nn0.e5UoCXIBXcH2Zd4EIR7NkfPwX99fOlEnSic5k2o22Uo"
+    )
+
+    // Supabase has automatically parsed the hash by now. It's safe to clear it to hide it.
+    let hadOAuthParams = false;
+    if (window.location.hash.includes("access_token") || window.location.search.includes("code=")) {
+        hadOAuthParams = true;
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    async function handleOAuthCallbackOnHomepage() {
+        if (!hadOAuthParams) {
+            return;
+        }
+
+        const homepageUrl = "{% url 'file_sharing:homepage' %}";
+        const dashboardUrl = "{% url 'file_sharing:dashboard' %}";
+        const supabaseLoginUrl = "{% url 'file_sharing:supabase_login' %}";
+
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error || !data?.session?.access_token) {
+            window.history.replaceState({}, document.title, homepageUrl);
+            return;
+        }
+
+        window.history.replaceState({}, document.title, homepageUrl);
+
+        const response = await fetch(supabaseLoginUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${data.session.access_token}`
+            }
+        });
+
+        if (response.ok) {
+            window.location.replace(dashboardUrl);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', handleOAuthCallbackOnHomepage);
+</script>
 {% endblock %}

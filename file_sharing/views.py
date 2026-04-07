@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
@@ -9,7 +9,11 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.urls import reverse
 from urllib.parse import urlencode
+from decouple import config
 from .forms import CustomUserCreationForm
+from jose import jwt
+from django.views.decorators.csrf import csrf_exempt
+
 
 from .models import SharedFile, FileShare, AccessLog, UserKey, Feedback
 from .utils import (
@@ -30,7 +34,6 @@ from cryptography.fernet import Fernet
 
 
 def homepage(request):
-    """Homepage for non-authenticated users"""
     if request.user.is_authenticated:
         return redirect('file_sharing:dashboard')
     return render(request, 'file_sharing/homepage.html')
@@ -483,3 +486,61 @@ def submit_feedback(request):
 
     return render(request, "feedback.html")
 
+
+User = get_user_model()
+
+SUPABASE_JWT_SECRET = "YOUR_SUPABASE_JWT_SECRET"
+
+
+@csrf_exempt
+def supabase_login(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    jwt_secret = config("SUPABASE_JWT_SECRET", default=config("YOUR_SUPABASE_JWT_SECRET", default="YOUR_SUPABASE_JWT_SECRET"))
+    if not jwt_secret or jwt_secret == "YOUR_SUPABASE_JWT_SECRET":
+        return JsonResponse({"error": "SUPABASE_JWT_SECRET is not configured"}, status=500)
+
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return JsonResponse({"error": "No token"}, status=401)
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return JsonResponse({"error": "Invalid authorization header format"}, status=401)
+
+    token = parts[1]
+
+    try:
+        payload = jwt.decode(token, jwt_secret, algorithms=["HS256"])
+    except Exception:
+        return JsonResponse({"error": "Invalid token"}, status=401)
+
+    email = payload.get("email")
+    if not email:
+        return JsonResponse({"error": "Token does not contain email"}, status=400)
+
+    user = User.objects.filter(email=email).first()
+    created = False
+
+    if not user:
+        base_username = (email.split("@")[0] or "google_user").replace(" ", "_")[:30]
+        candidate = base_username
+        suffix = 1
+
+        while User.objects.filter(username=candidate).exists():
+            suffix_str = f"_{suffix}"
+            candidate = f"{base_username[:max(1, 30 - len(suffix_str))]}{suffix_str}"
+            suffix += 1
+
+        user = User.objects.create_user(username=candidate, email=email)
+        created = True
+
+    if created:
+        from .utils import create_user_keys
+        create_user_keys(user)
+
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+    return JsonResponse({"status": "logged in"})

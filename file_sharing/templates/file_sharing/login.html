@@ -370,8 +370,22 @@
 
                 <button type="submit" class="btn-primary-custom">
                     <i class="fas fa-sign-in-alt me-2"></i>
-                    Sign In
+                    Log In
                 </button>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                    Login with Google
+                </button> -->
+                <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                    Login with Google
+                </button>
+                
             </form>
 
             <!-- Footer -->
@@ -381,4 +395,84 @@
         </div>
     </div>
 </div>
+<!-- <script>
+async function loginWithGoogle() {
+    await supabase.auth.signInWithOAuth({
+        provider: 'google'
+    })
+}
+</script>
+<script>
+function testClick() {
+  alert("Button working")
+}
+</script> -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseClient = window.supabase.createClient(
+    "https://hcvljhpekmyulnugxagy.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjdmxqaHBla215dWxudWd4YWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTA3NjYsImV4cCI6MjA4ODUyNjc2Nn0.e5UoCXIBXcH2Zd4EIR7NkfPwX99fOlEnSic5k2o22Uo"
+)
+
+const loginUrl = "{% url 'file_sharing:login' %}";
+const dashboardUrl = "{% url 'file_sharing:dashboard' %}";
+const supabaseLoginUrl = "{% url 'file_sharing:supabase_login' %}";
+
+function clearAuthParamsFromUrl() {
+    if (window.location.hash || window.location.search.includes("code=")) {
+        window.history.replaceState({}, document.title, loginUrl);
+    }
+}
+
+async function loginWithGoogle() {
+const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+        redirectTo: window.location.origin + '/login/'  // ← returns to login page where handleSupabaseCallback lives
+    }
+})
+if (error) console.error(error);
+}
+
+async function handleSupabaseCallback() {
+    const hasOAuthParams =
+        window.location.hash.includes("access_token") ||
+        window.location.search.includes("code=");
+
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error) {
+        console.error("Supabase session error:", error);
+        clearAuthParamsFromUrl();
+        return;
+    }
+
+    const session = data?.session;
+    if (!session?.access_token) {
+        if (hasOAuthParams) {
+            clearAuthParamsFromUrl();
+        }
+        return;
+    }
+
+    clearAuthParamsFromUrl();
+
+    const response = await fetch(supabaseLoginUrl, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${session.access_token}`
+        }
+    });
+
+    if (!response.ok) {
+        console.error("Backend Supabase login failed:", await response.text());
+        return;
+    }
+
+    window.location.replace(dashboardUrl);
+}
+
+document.addEventListener("DOMContentLoaded", handleSupabaseCallback);
+</script>
+
 {% endblock %}
