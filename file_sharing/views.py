@@ -14,7 +14,10 @@ from urllib.parse import urlencode
 from decouple import config
 from .forms import CustomUserCreationForm
 from jose import jwt, JWTError
+from jose.backends import RSAKey
 from django.views.decorators.csrf import csrf_exempt
+import requests as http_requests
+
 
 
 from .models import SharedFile, FileShare, AccessLog, UserKey, Feedback
@@ -492,49 +495,47 @@ def submit_feedback(request):
 
 User = get_user_model()
 
+def get_supabase_public_keys():
+    """Fetch Supabase's public JWKS to verify ES256 tokens."""
+    supabase_url = config("SUPABASE_URL")
+    jwks_url = f"{supabase_url}/auth/v1/.well-known/jwks.json"
+    response = http_requests.get(jwks_url, timeout=5)
+    response.raise_for_status()
+    return response.json()
+
 @csrf_exempt
 def supabase_login(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    # 1. Load and decode the JWT secret
-    raw_secret = config("SUPABASE_JWT_SECRET", default="")
-    if not raw_secret:
-        return JsonResponse({"error": "SUPABASE_JWT_SECRET is not configured"}, status=500)
-
-    try:
-        jwt_secret = base64.b64decode(raw_secret)
-    except Exception:
-        jwt_secret = raw_secret.encode("utf-8")
-
-    # 2. Extract Bearer token from Authorization header
+    # 1. Extract Bearer token
     auth_header = request.headers.get("Authorization", "")
     parts = auth_header.split()
-
     if len(parts) != 2 or parts[0].lower() != "bearer":
         return JsonResponse({"error": "Missing or invalid Authorization header"}, status=401)
 
     token = parts[1]
 
-    # 3. Decode and verify the JWT
+    # 2. Decode and verify using Supabase's public JWKS
     try:
+        jwks = get_supabase_public_keys()
         payload = jwt.decode(
             token,
-            jwt_secret,
-            algorithms=["HS256"],
-            options={"verify_aud": False}  # Supabase tokens have audience "authenticated"
+            jwks,
+            algorithms=["ES256", "HS256"],  # support both old and new Supabase projects
+            options={"verify_aud": False}
         )
     except JWTError as e:
         return JsonResponse({"error": f"Invalid token: {str(e)}"}, status=401)
     except Exception as e:
-        return JsonResponse({"error": f"Token decode failed: {str(e)}"}, status=401)
+        return JsonResponse({"error": f"Token verification failed: {str(e)}"}, status=401)
 
-    # 4. Extract email from payload
+    # 3. Extract email
     email = payload.get("email")
     if not email:
         return JsonResponse({"error": "Token does not contain email"}, status=400)
 
-    # 5. Get or create Django user
+    # 4. Get or create Django user
     user = User.objects.filter(email=email).first()
     created = False
 
@@ -542,7 +543,6 @@ def supabase_login(request):
         base_username = (email.split("@")[0] or "google_user").replace(" ", "_")[:30]
         candidate = base_username
         suffix = 1
-
         while User.objects.filter(username=candidate).exists():
             suffix_str = f"_{suffix}"
             candidate = f"{base_username[:max(1, 30 - len(suffix_str))]}{suffix_str}"
@@ -551,11 +551,11 @@ def supabase_login(request):
         user = User.objects.create_user(username=candidate, email=email)
         created = True
 
-    # 6. Create encryption keys for new users
+    # 5. Create encryption keys if missing
     if created or not UserKey.objects.filter(user=user).exists():
         create_user_keys(user)
 
-    # 7. Log the user into Django session
+    # 6. Log into Django session
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
     return JsonResponse({"status": "logged in", "created": created})
