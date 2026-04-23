@@ -9,7 +9,7 @@ from decouple import config
 
 def get_supabase_client():
     url = config("SUPABASE_URL", default=None)
-    key = config("SUPABASE_ANON_KEY", default=None)
+    key = config("SUPABASE_SERVICE_ROLE_KEY", default=None)
 
     if not url or not key:
         raise Exception("Supabase env variables missing")
