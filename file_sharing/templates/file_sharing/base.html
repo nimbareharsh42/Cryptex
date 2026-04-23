@@ -1104,26 +1104,65 @@
                         }
                     }
 
-                    showDownloadProgressModal(filename);
-
                     try {
+                        // Show the progress box immediately so it remains in the background
+                        showDownloadProgressModal(filename);
+                        
+                        let fileHandle;
+                        // Ask user where to save FIRST, if the browser supports it
+                        if (window.showSaveFilePicker) {
+                            updateDownloadProgress(0, 'Waiting for folder selection...');
+                            try {
+                                fileHandle = await window.showSaveFilePicker({
+                                    suggestedName: filename,
+                                });
+                                updateDownloadProgress(0, 'Your download has started...');
+                            } catch (err) {
+                                // User clicked cancel on the save dialog!
+                                hideDownloadProgressModal();
+                                return; // abort, do nothing further.
+                            }
+                        } else {
+                            updateDownloadProgress(0, 'Preparing secure download...');
+                        }
+
                         const response = await fetch(url);
                         if (!response.ok) throw new Error('Download failed');
 
-                        const contentLength = response.headers.get('content-length');
+                        // Try to get right filename from headers just in case
                         const contentDisposition = response.headers.get('content-disposition');
                         if(contentDisposition && contentDisposition.includes('filename=')) {
                             const match = contentDisposition.match(/filename="?([^";]+)"?/);
                             if(match) filename = match[1];
                         }
+                        
+                        const contentLength = response.headers.get('content-length');
+                        const total = contentLength ? parseInt(contentLength, 10) : 0;
+                        let loaded = 0;
 
-                        if (!contentLength) {
+                        if (fileHandle) {
+                            // Stream directly into the user's chosen file!
+                            const writable = await fileHandle.createWritable();
+                            const reader = response.body.getReader();
+
+                            while(true) {
+                                const {done, value} = await reader.read();
+                                if (done) break;
+                                await writable.write(value);
+                                loaded += value.length;
+                                
+                                if (total) {
+                                    const percentage = (loaded / total) * 100;
+                                    updateDownloadProgress(percentage.toFixed(1), 'Downloading securely...');
+                                } else {
+                                    updateDownloadProgress(100, `Downloaded ${formatFileSize(loaded)}...`);
+                                }
+                            }
+                            await writable.close();
                             updateDownloadProgress(100, 'Download complete!');
-                            const blob = await response.blob();
-                            startActualDownload(blob, filename);
+
                         } else {
-                            const total = parseInt(contentLength, 10);
-                            let loaded = 0;
+                            // Fallback for browsers that don't support file picking (e.g., Brave, Firefox)
                             const reader = response.body.getReader();
                             const chunks = [];
 
@@ -1132,13 +1171,24 @@
                                 if (done) break;
                                 chunks.push(value);
                                 loaded += value.length;
-                                const percentage = (loaded / total) * 100;
-                                updateDownloadProgress(percentage.toFixed(1), 'Downloading securely...');
+
+                                if (total) {
+                                    const percentage = (loaded / total) * 100;
+                                    updateDownloadProgress(percentage.toFixed(1), 'Decrypting securely...');
+                                } else {
+                                    updateDownloadProgress(100, `Decrypting ${formatFileSize(loaded)}...`);
+                                }
                             }
 
                             const blob = new Blob(chunks, { type: response.headers.get('content-type') });
-                            updateDownloadProgress(100, 'Download complete!');
+                            
+                            // Immediately hide the modal before triggering the native Save As dialog
+                            hideDownloadProgressModal();
                             startActualDownload(blob, filename);
+                            
+                            // Return early to prevent the false 'Complete' and Confetti
+                            // Since we can't detect if the user clicks Cancel in the Brave Save As dialog
+                            return;
                         }
 
                         setTimeout(() => {
