@@ -960,6 +960,32 @@
         </div>
     </div>
 
+    <!-- Download Progress Modal -->
+    <div class="modal fade" id="downloadProgressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-download text-success fa-bounce" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-2">Downloading File</h4>
+                    <p class="text-muted mb-4" id="downloadFileInfo">filename.pdf</p>
+
+                    <div class="progress mb-3" style="height: 10px; border-radius: 5px;">
+                        <div id="downloadProgressBar"
+                            class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                            style="width: 0%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-small text-muted">
+                        <span id="downloadProgressText">Preparing download...</span>
+                        <span id="downloadSpeedText">Process</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chat Modal -->
     <div class="modal fade" id="chatModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -1029,6 +1055,116 @@
             const modalEl = document.getElementById('progressModal');
             const progressModal = bootstrap.Modal.getInstance(modalEl);
             if (progressModal) progressModal.hide();
+        }
+
+        function showDownloadProgressModal(filename) {
+            document.getElementById('downloadFileInfo').textContent = filename;
+            document.getElementById('downloadProgressText').textContent = 'Preparing download...';
+            document.getElementById('downloadSpeedText').textContent = '';
+
+            const pb = document.getElementById('downloadProgressBar');
+            if (pb) {
+                pb.style.width = '0%';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('downloadProgressModal'));
+            modal.show();
+        }
+
+        function updateDownloadProgress(percentage, status) {
+            const pb = document.getElementById('downloadProgressBar');
+            if (pb) pb.style.width = percentage + '%';
+            if (status) document.getElementById('downloadProgressText').textContent = status;
+        }
+
+        function hideDownloadProgressModal() {
+            const modalEl = document.getElementById('downloadProgressModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const downloadLinks = document.querySelectorAll('a[href*="/download/"]');
+            downloadLinks.forEach(link => {
+                link.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('href');
+                    let filename = "File";
+                    if (this.hasAttribute('data-filename')) {
+                        filename = this.getAttribute('data-filename');
+                    } else {
+                        const card = this.closest('.file-card, .mini-file-item, .card, tr');
+                        if (card) {
+                            const nameEl = card.querySelector('.file-name, .file-name-trunc, [title]');
+                            if (nameEl && nameEl.getAttribute('title')) {
+                                filename = nameEl.getAttribute('title');
+                            } else if (nameEl) {
+                                filename = nameEl.textContent.trim();
+                            }
+                        }
+                    }
+
+                    showDownloadProgressModal(filename);
+
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error('Download failed');
+
+                        const contentLength = response.headers.get('content-length');
+                        const contentDisposition = response.headers.get('content-disposition');
+                        if(contentDisposition && contentDisposition.includes('filename=')) {
+                            const match = contentDisposition.match(/filename="?([^";]+)"?/);
+                            if(match) filename = match[1];
+                        }
+
+                        if (!contentLength) {
+                            updateDownloadProgress(100, 'Download complete!');
+                            const blob = await response.blob();
+                            startActualDownload(blob, filename);
+                        } else {
+                            const total = parseInt(contentLength, 10);
+                            let loaded = 0;
+                            const reader = response.body.getReader();
+                            const chunks = [];
+
+                            while(true) {
+                                const {done, value} = await reader.read();
+                                if (done) break;
+                                chunks.push(value);
+                                loaded += value.length;
+                                const percentage = (loaded / total) * 100;
+                                updateDownloadProgress(percentage.toFixed(1), 'Downloading securely...');
+                            }
+
+                            const blob = new Blob(chunks, { type: response.headers.get('content-type') });
+                            updateDownloadProgress(100, 'Download complete!');
+                            startActualDownload(blob, filename);
+                        }
+
+                        setTimeout(() => {
+                            hideDownloadProgressModal();
+                            createConfetti();
+                        }, 800);
+
+                    } catch (err) {
+                        console.error(err);
+                        hideDownloadProgressModal();
+                        alert("Error downloading file: " + err.message);
+                    }
+                });
+            });
+        });
+
+        function startActualDownload(blob, filename) {
+            const tempUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = tempUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(tempUrl);
+            a.remove();
         }
 
         function showDeleteProgressModal(filename) {
