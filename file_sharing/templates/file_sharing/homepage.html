@@ -749,6 +749,9 @@
             return;
         }
 
+        const overlay = document.getElementById('googleLoginOverlay');
+        if (overlay) overlay.style.display = 'flex';
+
         const homepageUrl = "{% url 'file_sharing:homepage' %}";
         const dashboardUrl = "{% url 'file_sharing:dashboard' %}";
         const supabaseLoginUrl = "{% url 'file_sharing:supabase_login' %}";
@@ -757,6 +760,7 @@
 
         if (error || !data?.session?.access_token) {
             window.history.replaceState({}, document.title, homepageUrl);
+            if (overlay) overlay.style.display = 'none';
             return;
         }
 
@@ -771,6 +775,9 @@
 
         if (response.ok) {
             window.location.replace(dashboardUrl);
+        } else {
+            console.error("Backend login failed");
+            if (overlay) overlay.style.display = 'none';
         }
     }
 

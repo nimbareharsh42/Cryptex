@@ -443,10 +443,17 @@ async function handleSupabaseCallback() {
         window.location.hash.includes("access_token") ||
         window.location.search.includes("code=");
 
+    if (hasOAuthParams) {
+        const overlay = document.getElementById('googleLoginOverlay');
+        if (overlay) overlay.style.display = 'flex';
+    }
+
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) {
         console.error("Supabase session error:", error);
         clearAuthParamsFromUrl();
+        const overlay = document.getElementById('googleLoginOverlay');
+        if (overlay) overlay.style.display = 'none';
         return;
     }
 
@@ -454,6 +461,8 @@ async function handleSupabaseCallback() {
     if (!session?.access_token) {
         if (hasOAuthParams) {
             clearAuthParamsFromUrl();
+            const overlay = document.getElementById('googleLoginOverlay');
+            if (overlay) overlay.style.display = 'none';
         }
         return;
     }
@@ -469,6 +478,8 @@ async function handleSupabaseCallback() {
 
     if (!response.ok) {
         console.error("Backend Supabase login failed:", await response.text());
+        const overlay = document.getElementById('googleLoginOverlay');
+        if (overlay) overlay.style.display = 'none';
         return;
     }
 
