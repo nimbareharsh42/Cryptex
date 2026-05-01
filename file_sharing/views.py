@@ -290,6 +290,26 @@ def profile(request):
     return render(request, 'file_sharing/profile.html', context)
 
 @login_required
+def edit_username(request):
+    if request.method == 'POST':
+        new_username = request.POST.get('new_username', '').strip()
+        if not new_username:
+            messages.error(request, 'Username cannot be empty.')
+            return redirect('file_sharing:profile')
+        
+        # Check if username is already taken by another user
+        if User.objects.filter(username=new_username).exclude(pk=request.user.pk).exists():
+            messages.error(request, 'Username is already taken.')
+            return redirect('file_sharing:profile')
+            
+        request.user.username = new_username
+        request.user.save()
+        messages.success(request, 'Username updated successfully.')
+        return redirect('file_sharing:profile')
+    
+    return HttpResponse("Invalid request", status=400)
+
+@login_required
 def user_uploads(request):
     user_files = SharedFile.objects.filter(owner=request.user).order_by('-upload_date')
     return render(request, 'file_sharing/user_uploads.html', {'user_files': user_files})

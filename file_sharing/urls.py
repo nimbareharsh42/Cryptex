@@ -23,6 +23,7 @@ urlpatterns = [
     # path('chat/', ),
 
     path('profile/', views.profile, name='profile'),
+    path('profile/edit-username/', views.edit_username, name='edit_username'),
     path('my-uploads/', views.user_uploads, name='user_uploads'),
     path('feedback/', views.feedback, name='feedback'),
 
