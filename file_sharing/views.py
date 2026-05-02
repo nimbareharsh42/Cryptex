@@ -2,7 +2,7 @@ import base64
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate, get_user_model
+from django.contrib.auth import login, authenticate, get_user_model, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
@@ -358,6 +358,16 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'file_sharing/login.html', {'form': form})
+
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+        response = render(request, 'file_sharing/logout.html')
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        return response
+
+    return redirect('file_sharing:homepage')
 
 @login_required
 def share_page(request):

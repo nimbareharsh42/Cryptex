@@ -426,10 +426,15 @@ function clearAuthParamsFromUrl() {
 }
 
 async function loginWithGoogle() {
+    await supabaseClient.auth.signOut();
+
     const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: window.location.origin + '/login/'
+            redirectTo: window.location.origin + '/login/',
+            queryParams: {
+                prompt: 'select_account'
+            }
         }
     })
 
@@ -442,6 +447,10 @@ async function handleSupabaseCallback() {
     const hasOAuthParams =
         window.location.hash.includes("access_token") ||
         window.location.search.includes("code=");
+
+    if (!hasOAuthParams) {
+        return;
+    }
 
     if (hasOAuthParams) {
         const overlay = document.getElementById('googleLoginOverlay');
